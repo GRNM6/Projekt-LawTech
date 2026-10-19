@@ -22,6 +22,16 @@ Für echte Verzeichnisse:
 2. Einen API-Schlüssel von https://console.anthropic.com eintragen
 3. `npm run dev` neu starten
 
+## EUIPO-Prüfung aktivieren
+
+Die von der KI vorgeschlagenen Begriffe können gegen die harmonisierte Datenbank der EUIPO
+geprüft werden (API-Produkt „Goods and Services“).
+
+1. Auf https://dev.euipo.europa.eu mit dem EUIPO-Konto anmelden
+2. Eine App registrieren und das Produkt **Goods and Services** abonnieren (zuerst in der Sandbox)
+3. Client-ID, Client-Secret und API-Basis-URL in `.env.local` eintragen (siehe `.env.example`)
+4. Den Validierungs-Endpunkt in `lib/euipo.ts` (`validateClassTerms`) laut OpenAPI-Spezifikation einsetzen
+
 ## Aufbau
 
 | Pfad | Inhalt |
@@ -30,6 +40,7 @@ Für echte Verzeichnisse:
 | `app/anmelden/page.tsx` | Anmelde-Assistent |
 | `components/wizard/` | Die einzelnen Schritte des Assistenten |
 | `app/api/verzeichnis/route.ts` | KI-Erstellung des Waren- und Dienstleistungsverzeichnisses |
+| `lib/euipo.ts` | Anbindung an die EUIPO-API |
 | `lib/fees.ts` | EUIPO-Amtsgebühren |
 | `lib/options.ts` | Auswahl-Chips, Länderliste |
 | `lib/demo.ts` | Beispieldaten für den Demo-Modus |

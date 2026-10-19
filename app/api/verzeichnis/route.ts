@@ -1,4 +1,5 @@
 import { buildDemoSpec } from "@/lib/demo";
+import { checkSpecWithEuipo } from "@/lib/euipo";
 import { countryName, optionLabel, OFFERINGS, FUTURE_PLANS } from "@/lib/options";
 import type { SpecClass, SpecResult, WizardData } from "@/lib/types";
 
@@ -57,7 +58,15 @@ export async function POST(request: Request) {
 
   try {
     const result = await generateWithClaude(apiKey, data, websiteText, pitchFile);
-    return Response.json({ ...result, sourcesUsed, demo: false } satisfies SpecResult);
+    // Begriffe gegen die harmonisierte EUIPO-Datenbank prüfen (falls Zugang hinterlegt)
+    const checked = await checkSpecWithEuipo(result.classes);
+    return Response.json({
+      ...result,
+      classes: checked ?? result.classes,
+      sourcesUsed,
+      demo: false,
+      euipoChecked: checked !== null,
+    } satisfies SpecResult);
   } catch (error) {
     console.error("[verzeichnis] KI-Fehler:", error);
     return Response.json(

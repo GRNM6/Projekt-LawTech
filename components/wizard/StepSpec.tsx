@@ -56,6 +56,9 @@ export function StepSpec({
         {spec.demo && (
           <span className="rounded-full bg-coral px-3 py-1 font-semibold text-white">Demo-Modus</span>
         )}
+        {spec.euipoChecked && (
+          <span className="rounded-full bg-mint-soft px-3 py-1">✓ Mit EUIPO-Datenbank abgeglichen</span>
+        )}
         {spec.sourcesUsed.map((s) => (
           <span key={s} className="rounded-full bg-mint-soft px-3 py-1">
             ✓ {s} ausgewertet
@@ -119,6 +122,7 @@ export function StepSpec({
 }
 
 function ClassCard({ c, checked, onToggle }: { c: SpecClass; checked: boolean; onToggle: (n: number) => void }) {
+  const allHarmonised = c.termStatus !== undefined && c.terms.every((t) => c.termStatus?.[t] === "harmonised");
   return (
     <div
       className={`rounded-2xl border-2 bg-paper transition ${
@@ -143,8 +147,25 @@ function ClassCard({ c, checked, onToggle }: { c: SpecClass; checked: boolean; o
       <details className="border-t-2 border-dashed border-line px-4 py-2 text-sm">
         <summary className="cursor-pointer text-muted select-none">
           Für Profis: die offiziellen Begriffe ({c.terms.length})
+          {allHarmonised && <span className="ml-2 font-medium text-mint">✓ EUIPO-geprüft</span>}
         </summary>
-        <p className="mt-2 pb-2 leading-relaxed">{c.terms.join("; ")}</p>
+        {c.termStatus ? (
+          <ul className="mt-2 space-y-1 pb-2">
+            {c.terms.map((t) => (
+              <li key={t} className="flex items-start gap-2">
+                <span
+                  title={c.termStatus?.[t] === "harmonised" ? "In der EUIPO-Datenbank" : "Wird individuell geprüft"}
+                  className={c.termStatus?.[t] === "harmonised" ? "text-mint" : "text-sun"}
+                >
+                  {c.termStatus?.[t] === "harmonised" ? "✓" : "●"}
+                </span>
+                <span>{t}</span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="mt-2 pb-2 leading-relaxed">{c.terms.join("; ")}</p>
+        )}
       </details>
     </div>
   );

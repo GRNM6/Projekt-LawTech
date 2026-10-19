@@ -43,13 +43,20 @@ export interface SpecClass {
   terms: string[];
   /** true = Kerngeschäft (vorausgewählt), false = sinnvolle Erweiterung */
   core: boolean;
+  /** Ergebnis der EUIPO-Prüfung je Begriff (nur vorhanden, wenn geprüft wurde) */
+  termStatus?: Record<string, TermStatus>;
 }
+
+/** harmonised = in der EUIPO-Datenbank, unknown = nicht gefunden, wird individuell geprüft */
+export type TermStatus = "harmonised" | "unknown";
 
 export interface SpecResult {
   summary: string;
   classes: SpecClass[];
   hints: string[];
   sourcesUsed: string[];
+  /** true, wenn die Begriffe gegen die EUIPO-Datenbank geprüft wurden */
+  euipoChecked?: boolean;
   /** true, wenn kein API-Key gesetzt ist und Beispieldaten erzeugt wurden */
   demo: boolean;
 }
