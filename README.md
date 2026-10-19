@@ -1,36 +1,41 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Markenstart (Arbeitstitel)
 
-## Getting Started
+Spielerischer Assistent für die Anmeldung einer **Unionsmarke bei der EUIPO** – ohne Juristendeutsch.
+Nutzer erzählen von ihrem Projekt (Auswahl, eigene Worte, Website, Pitch-PDF); eine KI erstellt daraus
+das Waren- und Dienstleistungsverzeichnis.
 
-First, run the development server:
+## Lokal starten
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Dann im Browser http://localhost:3000 öffnen.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## KI aktivieren
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Ohne Schlüssel läuft der Assistent im **Demo-Modus** mit Beispieldaten.
+Für echte Verzeichnisse:
 
-## Learn More
+1. `.env.example` zu `.env.local` kopieren
+2. Einen API-Schlüssel von https://console.anthropic.com eintragen
+3. `npm run dev` neu starten
 
-To learn more about Next.js, take a look at the following resources:
+## Aufbau
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+| Pfad | Inhalt |
+| --- | --- |
+| `app/page.tsx` | Startseite |
+| `app/anmelden/page.tsx` | Anmelde-Assistent |
+| `components/wizard/` | Die einzelnen Schritte des Assistenten |
+| `app/api/verzeichnis/route.ts` | KI-Erstellung des Waren- und Dienstleistungsverzeichnisses |
+| `lib/fees.ts` | EUIPO-Amtsgebühren |
+| `lib/options.ts` | Auswahl-Chips, Länderliste |
+| `lib/demo.ts` | Beispieldaten für den Demo-Modus |
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Noch offen
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Bezahlung und Einreichung bei der EUIPO
+- Ähnlichkeitsrecherche
+- Nutzerkonten und Speichern des Fortschritts

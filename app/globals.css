@@ -1,26 +1,109 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* Farbwelt: warm, freundlich, ein bisschen verspielt */
+@theme {
+  --color-cream: #fff8ee;
+  --color-paper: #ffffff;
+  --color-ink: #1d1b2f;
+  --color-muted: #6b6880;
+  --color-line: #ece4d6;
+  --color-violet: #6c4cf5;
+  --color-violet-soft: #ece7ff;
+  --color-coral: #ff6b4a;
+  --color-coral-soft: #ffe5de;
+  --color-mint: #2fbf8f;
+  --color-mint-soft: #ddf6ec;
+  --color-sun: #ffc83d;
+  --color-sun-soft: #fff1c9;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-display: var(--font-bricolage);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+:root {
+  color-scheme: light;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-cream);
+  color: var(--color-ink);
+}
+
+/* Sanftes Einblenden beim Schrittwechsel */
+@keyframes step-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-step-in {
+  animation: step-in 0.35s ease-out both;
+}
+
+@keyframes pop {
+  0% {
+    transform: scale(0.9);
+  }
+  60% {
+    transform: scale(1.06);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+.animate-pop {
+  animation: pop 0.25s ease-out;
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-3deg);
+  }
+  50% {
+    transform: translateY(-8px) rotate(3deg);
+  }
+}
+.animate-float {
+  animation: float 4s ease-in-out infinite;
+}
+
+@keyframes confetti-fall {
+  0% {
+    transform: translateY(-10vh) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(110vh) rotate(720deg);
+    opacity: 0.9;
+  }
+}
+.confetti-piece {
+  position: fixed;
+  top: 0;
+  width: 10px;
+  height: 14px;
+  border-radius: 2px;
+  pointer-events: none;
+  z-index: 50;
+  animation: confetti-fall linear forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-step-in,
+  .animate-pop,
+  .animate-float,
+  .confetti-piece {
+    animation: none;
+  }
+  .confetti-piece {
+    display: none;
+  }
 }
