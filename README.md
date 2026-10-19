@@ -29,8 +29,10 @@ geprüft werden (API-Produkt „Goods and Services“).
 
 1. Auf https://dev.euipo.europa.eu mit dem EUIPO-Konto anmelden
 2. Eine App registrieren und das Produkt **Goods and Services** abonnieren (zuerst in der Sandbox)
-3. Client-ID, Client-Secret und API-Basis-URL in `.env.local` eintragen (siehe `.env.example`)
-4. Den Validierungs-Endpunkt in `lib/euipo.ts` (`validateClassTerms`) laut OpenAPI-Spezifikation einsetzen
+3. Client-ID und Client-Secret in `.env.local` eintragen (siehe `.env.example`)
+4. `npm run dev` neu starten
+
+Nicht harmonisierte Begriffe werden automatisch durch passende Vorschläge der EUIPO ersetzt.
 
 ## Aufbau
 
