@@ -53,7 +53,14 @@ export async function POST(request: Request) {
   if (!apiKey) {
     // Kleine Pause, damit sich der Demo-Modus wie der echte Ablauf anfühlt
     await new Promise((r) => setTimeout(r, 2500));
-    return Response.json(buildDemoSpec(data, sourcesUsed));
+    const demo = buildDemoSpec(data, sourcesUsed);
+    // Auch im Demo-Modus gegen die EUIPO prüfen, falls Zugang hinterlegt ist
+    const checked = await checkSpecWithEuipo(demo.classes);
+    return Response.json({
+      ...demo,
+      classes: checked ?? demo.classes,
+      euipoChecked: checked !== null,
+    } satisfies SpecResult);
   }
 
   try {
