@@ -57,7 +57,7 @@ export function ChoiceCard({
       type="button"
       onClick={onClick}
       aria-pressed={selected}
-      className={`flex flex-col rounded-2xl border-2 p-4 text-left transition ${
+      className={`flex w-full flex-col rounded-2xl border-2 p-4 text-left transition ${
         selected
           ? "border-violet bg-violet-soft shadow-[4px_4px_0_0_#6c4cf5]"
           : "border-line bg-paper hover:border-violet"

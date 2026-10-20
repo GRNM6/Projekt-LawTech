@@ -18,7 +18,8 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export function canContinue(step: StepId, data: WizardData, hasSelection: boolean): boolean {
   switch (step) {
     case "name":
-      if (data.markType !== "bild" && data.markName.trim().length < 2) return false;
+      // Mindestens die erste Namensoption muss ausgefüllt sein, weitere sind freiwillig
+      if (data.markType !== "bild" && data.markNames[0].trim().length < 2) return false;
       if (data.markType !== "wort" && !data.logoDataUrl) return false;
       return true;
     case "what":
@@ -49,7 +50,7 @@ export function canContinue(step: StepId, data: WizardData, hasSelection: boolea
 /** Fingerabdruck der Angaben, die das Verzeichnis beeinflussen */
 export function specInputKey(data: WizardData, pitch: File | null): string {
   return JSON.stringify([
-    data.markName,
+    data.markNames,
     data.markType,
     data.offerings,
     data.description,

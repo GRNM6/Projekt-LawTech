@@ -4,7 +4,7 @@ import { useState, type ReactNode } from "react";
 import { BRAND } from "@/lib/brand";
 import { euipoFeeLines, euipoFeeTotal, formatEuro } from "@/lib/fees";
 import { countryName, isEea } from "@/lib/options";
-import type { SpecResult, WizardData } from "@/lib/types";
+import { filledMarkNames, type SpecResult, type WizardData } from "@/lib/types";
 import { Callout, StepHeader } from "./ui";
 
 export function StepSummary({
@@ -22,6 +22,7 @@ export function StepSummary({
   const [submitted, setSubmitted] = useState(false);
   const classes = spec.classes.filter((c) => selected.includes(c.classNumber));
   const lines = euipoFeeLines(classes.length);
+  const markNames = filledMarkNames(data);
   const applicant =
     data.applicantKind === "person"
       ? `${data.firstName} ${data.lastName}`
@@ -53,9 +54,14 @@ export function StepSummary({
               <img src={data.logoDataUrl} alt="" className="h-12 w-12 object-contain" />
             )}
             {data.markType !== "bild" && (
-              <span className="font-display text-2xl font-extrabold break-all">{data.markName}</span>
+              <span className="font-display text-2xl font-extrabold break-all">{markNames[0]}</span>
             )}
           </div>
+          {data.markType !== "bild" && markNames.length > 1 && (
+            <p className="mt-2 text-sm text-muted">
+              Weitere Optionen: {markNames.slice(1).join(" · ")}
+            </p>
+          )}
         </SummaryCard>
 
         <SummaryCard title="Inhaber" onEdit={() => onEdit("who")}>

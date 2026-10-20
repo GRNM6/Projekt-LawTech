@@ -1,7 +1,7 @@
 import { buildDemoSpec } from "@/lib/demo";
 import { checkSpecWithEuipo } from "@/lib/euipo";
 import { countryName, optionLabel, OFFERINGS, FUTURE_PLANS } from "@/lib/options";
-import type { SpecClass, SpecResult, WizardData } from "@/lib/types";
+import { filledMarkNames, type SpecClass, type SpecResult, type WizardData } from "@/lib/types";
 
 /**
  * Erstellt aus den Angaben des Nutzers (plus Website und Pitch-PDF)
@@ -227,7 +227,9 @@ function buildUserPrompt(data: WizardData, websiteText: string | null, hasPdf: b
     "Nur ein Logo (Bildmarke)";
 
   const lines = [
-    `Markenname: ${data.markName || "(kein Name, reines Logo)"}`,
+    `Markenname (Optionen, Favorit zuerst): ${
+      data.markType === "bild" ? "(kein Name, reines Logo)" : filledMarkNames(data).join(" | ") || "-"
+    }`,
     `Markenform: ${markTypeLabel}`,
     `Anmelder sitzt in: ${countryName(data.country)}`,
     `Angebot (Auswahl): ${data.offerings.map((id) => optionLabel(OFFERINGS, id)).join(", ") || "-"}`,

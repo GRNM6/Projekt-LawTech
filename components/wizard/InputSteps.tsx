@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import { COUNTRIES, FUTURE_PLANS, isEea, OFFERINGS } from "@/lib/options";
-import type { MarkType, WizardData } from "@/lib/types";
+import { filledMarkNames, primaryMarkName, type MarkType, type WizardData } from "@/lib/types";
 import { Callout, Chip, ChoiceCard, Field, inputClass, StepHeader } from "./ui";
 
 type Update = (patch: Partial<WizardData>) => void;
@@ -15,11 +15,91 @@ function toggle(list: string[], id: string): string[] {
 /* 1 · Marke                                                            */
 /* ------------------------------------------------------------------ */
 
-const MARK_TYPES: { id: MarkType; emoji: string; title: string; text: string }[] = [
-  { id: "wort", emoji: "🔤", title: "Nur der Name", text: "Schützt den Namen – egal in welcher Schrift." },
-  { id: "wortbild", emoji: "🖼️", title: "Name mit Logo", text: "Schützt die Kombination, so wie sie aussieht." },
-  { id: "bild", emoji: "🎨", title: "Nur ein Logo", text: "Schützt ein Zeichen ohne Text." },
+const MARK_TYPES: {
+  id: MarkType;
+  emoji: string;
+  title: string;
+  text: string;
+  pros: string[];
+  cons: string[];
+}[] = [
+  {
+    id: "wort",
+    emoji: "🔤",
+    title: "Nur der Name",
+    text: "Schützt den Namen – egal in welcher Schrift.",
+    pros: [
+      "Breitester Schutz für deinen Namen – egal in welcher Schrift, Farbe oder Gestaltung.",
+      "Du kannst dein Logo später ändern, ohne neu anmelden zu müssen.",
+    ],
+    cons: [
+      "Der Name muss für sich allein unterscheidungskräftig sein.",
+      "Dein Logo-Design ist damit nicht geschützt.",
+    ],
+  },
+  {
+    id: "wortbild",
+    emoji: "🖼️",
+    title: "Name mit Logo",
+    text: "Schützt die Kombination, so wie sie aussieht.",
+    pros: [
+      "Schützt deinen Auftritt genau so, wie Kunden ihn sehen.",
+      "Kann auch klappen, wenn der Name allein zu schwach wäre.",
+    ],
+    cons: [
+      "Geschützt ist nur diese Kombination – den Namen in anderer Gestaltung erfasst sie weniger sicher.",
+      "Änderst du das Logo deutlich, brauchst du eine neue Anmeldung.",
+    ],
+  },
+  {
+    id: "bild",
+    emoji: "🎨",
+    title: "Nur ein Logo",
+    text: "Schützt ein Zeichen ohne Text.",
+    pros: [
+      "Schützt ein Zeichen, das Kunden auch ohne Namen wiedererkennen.",
+      "Funktioniert in jeder Sprache und jedem Land gleich.",
+    ],
+    cons: [
+      "Dein Name bleibt ungeschützt.",
+      "Ändert sich das Logo deutlich, brauchst du eine neue Anmeldung.",
+    ],
+  },
 ];
+
+const NAME_SLOTS = [
+  { label: "Option 1 · dein Favorit", placeholder: "z. B. Fluffy Rockets" },
+  { label: "Option 2 (optional)", placeholder: "z. B. Rocket Paws" },
+  { label: "Option 3 (optional)", placeholder: "z. B. Wuffwerk" },
+] as const;
+
+function MarkTypeInfo({ pros, cons }: { pros: string[]; cons: string[] }) {
+  return (
+    <details className="group mt-2 rounded-xl bg-paper px-3 py-2 text-sm">
+      <summary className="cursor-pointer font-medium text-muted select-none group-open:text-ink">
+        ℹ️ Vor- und Nachteile
+      </summary>
+      <div className="mt-2 space-y-2 pb-1">
+        <ul className="space-y-1">
+          {pros.map((p) => (
+            <li key={p} className="flex gap-2">
+              <span className="text-mint">✓</span>
+              <span>{p}</span>
+            </li>
+          ))}
+        </ul>
+        <ul className="space-y-1">
+          {cons.map((c) => (
+            <li key={c} className="flex gap-2">
+              <span className="text-coral">✗</span>
+              <span>{c}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </details>
+  );
+}
 
 export function StepName({ data, update }: { data: WizardData; update: Update }) {
   const fileRef = useRef<HTMLInputElement>(null);
@@ -41,38 +121,63 @@ export function StepName({ data, update }: { data: WizardData; update: Update })
     reader.readAsDataURL(file);
   }
 
+  function setName(index: number, value: string) {
+    const markNames = [...data.markNames] as WizardData["markNames"];
+    markNames[index] = value;
+    update({ markNames });
+  }
+
   const showName = data.markType !== "bild";
   const showLogo = data.markType !== "wort";
+  const names = filledMarkNames(data);
 
   return (
     <div>
-      <StepHeader emoji="✏️" title="Wie heißt dein Baby?" subtitle="Also, deine Marke. Fangen wir mit dem Wichtigsten an." />
+      <StepHeader
+        emoji="✏️"
+        title="Wie soll deine Marke heißen?"
+        subtitle="Am besten funktionieren Namen, die nicht einfach beschreiben, was du anbietest – und es auch nicht anpreisen."
+      />
 
-      <div className="grid gap-3 sm:grid-cols-3">
+      <div className="grid items-start gap-3 sm:grid-cols-3">
         {MARK_TYPES.map((t) => (
-          <ChoiceCard
-            key={t.id}
-            selected={data.markType === t.id}
-            onClick={() => update({ markType: t.id })}
-            emoji={t.emoji}
-            title={t.title}
-            text={t.text}
-          />
+          <div key={t.id}>
+            <ChoiceCard
+              selected={data.markType === t.id}
+              onClick={() => update({ markType: t.id })}
+              emoji={t.emoji}
+              title={t.title}
+              text={t.text}
+            />
+            <MarkTypeInfo pros={t.pros} cons={t.cons} />
+          </div>
         ))}
       </div>
 
       <div className="mt-8 space-y-6">
         {showName && (
-          <Field label="Dein Markenname">
-            <input
-              className={`${inputClass} font-display text-2xl font-bold`}
-              value={data.markName}
-              onChange={(e) => update({ markName: e.target.value })}
-              placeholder="z. B. Fluffy Rockets"
-              maxLength={80}
-              autoFocus
-            />
-          </Field>
+          <div>
+            <span className="mb-1 block text-sm font-semibold">Deine Namensideen</span>
+            <span className="mb-3 block text-xs text-muted">
+              Gib bis zu drei Optionen an – dein Favorit zuerst.
+            </span>
+            <div className="space-y-3">
+              {NAME_SLOTS.map((slot, i) => (
+                <Field key={slot.label} label={slot.label}>
+                  <input
+                    className={`${inputClass} ${
+                      i === 0 ? "font-display text-2xl font-bold" : "font-display text-lg font-semibold"
+                    }`}
+                    value={data.markNames[i]}
+                    onChange={(e) => setName(i, e.target.value)}
+                    placeholder={slot.placeholder}
+                    maxLength={80}
+                    autoFocus={i === 0}
+                  />
+                </Field>
+              ))}
+            </div>
+          </div>
         )}
 
         {showLogo && (
@@ -102,7 +207,7 @@ export function StepName({ data, update }: { data: WizardData; update: Update })
         )}
       </div>
 
-      {(data.markName.trim() || data.logoDataUrl) && (
+      {((showName && names.length > 0) || (showLogo && data.logoDataUrl)) && (
         <div className="mt-8 rounded-2xl border-2 border-ink bg-paper p-5 shadow-[6px_6px_0_0_#1d1b2f]">
           <p className="text-xs font-semibold tracking-widest text-muted uppercase">Vorschau · Unionsmarke</p>
           <div className="mt-3 flex items-center gap-4">
@@ -110,10 +215,13 @@ export function StepName({ data, update }: { data: WizardData; update: Update })
               // eslint-disable-next-line @next/next/no-img-element
               <img src={data.logoDataUrl} alt="" className="h-14 w-14 object-contain" />
             )}
-            {showName && data.markName.trim() && (
-              <span className="font-display text-3xl font-extrabold break-all">{data.markName}</span>
+            {showName && names[0] && (
+              <span className="font-display text-3xl font-extrabold break-all">{names[0]}</span>
             )}
           </div>
+          {showName && names.length > 1 && (
+            <p className="mt-3 text-sm text-muted">Alternativen: {names.slice(1).join(" · ")}</p>
+          )}
         </div>
       )}
     </div>
@@ -129,7 +237,9 @@ export function StepWhat({ data, update }: { data: WizardData; update: Update })
     <div>
       <StepHeader
         emoji="💬"
-        title={`Was steckt hinter ${data.markName.trim() ? `„${data.markName.trim()}“` : "deiner Marke"}?`}
+        title={`Was steckt hinter ${
+          data.markType !== "bild" && primaryMarkName(data) ? `„${primaryMarkName(data)}“` : "deiner Marke"
+        }?`}
         subtitle="Tipp einfach alles an, was passt. Mehrfachauswahl ausdrücklich erwünscht."
       />
 

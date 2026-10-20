@@ -4,7 +4,8 @@ export type ApplicantKind = "person" | "firma";
 /** Alles, was der Nutzer im Assistenten eingibt. */
 export interface WizardData {
   // Schritt 1: Marke
-  markName: string;
+  /** Bis zu drei Namensoptionen; später wird geprüft, welche die besten Eintragungschancen hat */
+  markNames: [string, string, string];
   markType: MarkType;
   logoDataUrl: string | null;
 
@@ -30,6 +31,19 @@ export interface WizardData {
   city: string;
   country: string;
   email: string;
+}
+
+/** Alle ausgefüllten Namensoptionen, ohne Leerzeichen am Rand und ohne Duplikate */
+export function filledMarkNames(data: Pick<WizardData, "markNames">): string[] {
+  // Robust gegen unvollständige Daten, z. B. wenn die API alte oder kaputte Angaben bekommt
+  const raw: unknown[] = Array.isArray(data.markNames) ? data.markNames : [];
+  const names = raw.filter((n): n is string => typeof n === "string").map((n) => n.trim()).filter(Boolean);
+  return names.filter((n, i) => names.findIndex((x) => x.toLowerCase() === n.toLowerCase()) === i);
+}
+
+/** Erste ausgefüllte Namensoption (Favorit), sonst leerer String */
+export function primaryMarkName(data: Pick<WizardData, "markNames">): string {
+  return filledMarkNames(data)[0] ?? "";
 }
 
 /** Eine Klasse im KI-erstellten Waren- und Dienstleistungsverzeichnis. */
@@ -62,7 +76,7 @@ export interface SpecResult {
 }
 
 export const emptyWizardData: WizardData = {
-  markName: "",
+  markNames: ["", "", ""],
   markType: "wort",
   logoDataUrl: null,
   offerings: [],

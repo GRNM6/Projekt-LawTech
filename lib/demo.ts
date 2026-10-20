@@ -1,4 +1,4 @@
-import type { SpecClass, SpecResult, WizardData } from "./types";
+import { primaryMarkName, type SpecClass, type SpecResult, type WizardData } from "./types";
 
 /**
  * Beispiel-Verzeichnis, solange kein ANTHROPIC_API_KEY gesetzt ist.
@@ -202,7 +202,7 @@ export function buildDemoSpec(data: WizardData, sourcesUsed: string[]): SpecResu
     add("consulting", true);
   }
 
-  const name = data.markName.trim() || "deine Marke";
+  const name = (data.markType !== "bild" && primaryMarkName(data)) || "deine Marke";
   return {
     summary: `So könnte der Schutz für „${name}“ aussehen. Das ist ein Beispiel – mit hinterlegtem KI-Schlüssel wird das Verzeichnis individuell aus deinen Angaben erstellt.`,
     classes: Array.from(classes.values()).sort((a, b) => a.classNumber - b.classNumber),
