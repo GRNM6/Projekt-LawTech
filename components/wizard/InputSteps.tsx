@@ -26,8 +26,8 @@ const MARK_TYPES: {
   {
     id: "wort",
     emoji: "🔤",
-    title: "Nur der Name",
-    text: "Schützt den Namen – egal in welcher Schrift.",
+    title: "Wortmarke",
+    text: "Geschützt wird nur dein Name – egal in welcher Schrift oder Farbe.",
     pros: [
       "Breitester Schutz für deinen Namen – egal in welcher Schrift, Farbe oder Gestaltung.",
       "Du kannst dein Logo später ändern, ohne neu anmelden zu müssen.",
@@ -40,8 +40,8 @@ const MARK_TYPES: {
   {
     id: "wortbild",
     emoji: "🖼️",
-    title: "Name mit Logo",
-    text: "Schützt die Kombination, so wie sie aussieht.",
+    title: "Wort-/Bildmarke",
+    text: "Geschützt wird dein Name zusammen mit deinem Logo – genau so, wie beides aussieht.",
     pros: [
       "Schützt deinen Auftritt genau so, wie Kunden ihn sehen.",
       "Kann auch klappen, wenn der Name allein zu schwach wäre.",
@@ -54,8 +54,8 @@ const MARK_TYPES: {
   {
     id: "bild",
     emoji: "🎨",
-    title: "Nur ein Logo",
-    text: "Schützt ein Zeichen ohne Text.",
+    title: "Bildmarke",
+    text: "Geschützt wird nur dein Logo – ein Zeichen ohne Text.",
     pros: [
       "Schützt ein Zeichen, das Kunden auch ohne Namen wiedererkennen.",
       "Funktioniert in jeder Sprache und jedem Land gleich.",

@@ -222,9 +222,9 @@ const TOOL = {
 
 function buildUserPrompt(data: WizardData, websiteText: string | null, hasPdf: boolean): string {
   const markTypeLabel =
-    data.markType === "wort" ? "Nur der Name (Wortmarke)" :
-    data.markType === "wortbild" ? "Name mit Logo (Wort-/Bildmarke)" :
-    "Nur ein Logo (Bildmarke)";
+    data.markType === "wort" ? "Wortmarke (nur der Name)" :
+    data.markType === "wortbild" ? "Wort-/Bildmarke (Name mit Logo)" :
+    "Bildmarke (nur ein Logo)";
 
   const lines = [
     `Markenname (Optionen, Favorit zuerst): ${

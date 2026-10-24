@@ -1,6 +1,6 @@
 # Projektstand
 
-_Zuletzt aktualisiert: 20.10.2026_
+_Zuletzt aktualisiert: 24.10.2026_
 
 ## Laufende Arbeit: Schritte 1–6 optimieren
 Branch `anmeldeprozess-optimieren` (noch nicht in `main` übernommen). Vorgehen: Schritt für Schritt
@@ -12,7 +12,8 @@ nach den Vorgaben von Geronimo, keine eigenmächtigen Umbauten.
   - Aufklappbare „Vor- und Nachteile“ unter Wort-, Wort-Bild- und Bildmarke
   - Statt eines Namens bis zu drei Optionen (`markNames`; Option 1 Pflicht, 2 und 3 optional).
     Später soll das System prüfen, welcher Name die besten Eintragungschancen hat (noch nicht gebaut)
-  - Offene Rückfragen: Sollen alle drei Namen Pflicht sein? Andere Überschrift bei „Nur ein Logo“?
+  - Offene Rückfragen: Sollen alle drei Namen Pflicht sein? Andere Überschrift bei „Bildmarke“?
+  - 24.10.: Kategorien heißen jetzt Wortmarke, Wort-/Bildmarke, Bildmarke; darunter umgangssprachlich, was geschützt wird
 - [ ] **Schritt 2 „Projekt“** – als Nächstes, Vorgaben folgen
 - [ ] Schritt 3 „Mehr Infos“
 - [ ] Schritt 4 „Zukunft“
