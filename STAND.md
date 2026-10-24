@@ -48,7 +48,12 @@ vorerst weggelassen.
 - [x] Schritt „Schutz“ dreistufig (24.10.): `SpecClass.tier` = muss | kern | spaeter (ersetzt `core`).
       🎯 Muss-Schutz fest ausgewählt (nicht abwählbar, Hinweis auf Schritt „Kern“) · 💼 Kerngeschäft
       vorausgewählt · 🔮 Für später freiwillig, mit Hinweis auf die Benutzungspflicht
-- [ ] Danach weiter nach Geronimos Vorgaben: Zukunft, Anmelder, Schutz
+- [ ] **Als Nächstes:** Schritte „Zukunft“ und „Anmelder“ nach Geronimos Vorgaben
+
+### Noch nicht lokal getestet (Stand 24.10.)
+Kern, Unterlagen → Angebot mit KI-Vorschlägen und der dreistufige Schritt „Schutz“ wurden in der
+Cloud nur per Demo-Test und TypeScript geprüft, kein vollständiger Build (npm-Verzeichnis dort nicht
+erreichbar). Vor dem Weitermachen einmal lokal `npm run build` laufen lassen und durchklicken.
 
 ## Hinweis zu Git auf Geronimos Mac
 Im aktuellen Netzwerk ist GitHub über SSH-Port 22 gesperrt („Connection refused“).
