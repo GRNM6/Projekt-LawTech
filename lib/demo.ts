@@ -1,12 +1,12 @@
 import { bereichById, matchBereiche } from "./bereiche";
-import { primaryMarkName, type SpecClass, type SpecResult, type WizardData } from "./types";
+import { higherTier, primaryMarkName, type SpecClass, type SpecResult, type SpecTier, type WizardData } from "./types";
 
 /**
  * Beispiel-Verzeichnis, solange kein ANTHROPIC_API_KEY gesetzt ist.
  * Bildet die Auswahl grob auf Nizza-Klassen ab, damit der Flow lokal durchklickbar ist.
  * Die Begriffe sind nur Platzhalter – das echte Verzeichnis erstellt die KI.
  */
-type Template = Omit<SpecClass, "core">;
+type Template = Omit<SpecClass, "tier">;
 
 const BY_ID: Record<string, Template[]> = {
   app: [
@@ -218,35 +218,35 @@ const FUTURE_TO_OFFERING: Record<string, string> = {
 export function buildDemoSpec(data: WizardData, sourcesUsed: string[]): SpecResult {
   const classes = new Map<number, SpecClass>();
 
-  const addTemplates = (templates: Template[], core: boolean) => {
+  const addTemplates = (templates: Template[], tier: SpecTier) => {
     for (const t of templates) {
       const existing = classes.get(t.classNumber);
       if (existing) {
         existing.terms = Array.from(new Set([...existing.terms, ...t.terms]));
-        existing.core = existing.core || core;
+        existing.tier = higherTier(existing.tier, tier);
       } else {
-        classes.set(t.classNumber, { ...t, terms: [...t.terms], core });
+        classes.set(t.classNumber, { ...t, terms: [...t.terms], tier });
       }
     }
   };
 
-  const add = (templateId: string, core: boolean) => addTemplates(BY_ID[templateId] ?? [], core);
+  const add = (templateId: string, tier: SpecTier) => addTemplates(BY_ID[templateId] ?? [], tier);
   // Bereiche aus dem Katalog: eigene Demo-Vorlage, sonst Platzhalter je Klasse
-  const addBereich = (bereichId: string, core: boolean) => {
+  const addBereich = (bereichId: string, tier: SpecTier) => {
     const templateId = BEREICH_TO_TEMPLATE[bereichId];
-    if (templateId) add(templateId, core);
-    else addTemplates(templatesFromCatalog(bereichId), core);
+    if (templateId) add(templateId, tier);
+    else addTemplates(templatesFromCatalog(bereichId), tier);
   };
 
-  matchBereiche(data.coreProtection ?? "").forEach((id) => addBereich(id, true));
-  data.offerings.forEach((id) => addBereich(id, true));
+  matchBereiche(data.coreProtection ?? "").forEach((id) => addBereich(id, "muss"));
+  data.offerings.forEach((id) => addBereich(id, "kern"));
   data.futurePlans.forEach((id) => {
     const offering = FUTURE_TO_OFFERING[id];
-    if (offering) add(offering, false);
+    if (offering) add(offering, "spaeter");
   });
 
   if (classes.size === 0) {
-    add("consulting", true);
+    add("consulting", "kern");
   }
 
   const name = (data.markType !== "bild" && primaryMarkName(data)) || "deine Marke";

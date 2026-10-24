@@ -68,10 +68,24 @@ export interface SpecClass {
   why: string;
   /** Offizielle Begriffe für die Anmeldung (möglichst aus der EUIPO-Harmonised-Database) */
   terms: string[];
-  /** true = Kerngeschäft (vorausgewählt), false = sinnvolle Erweiterung */
-  core: boolean;
+  /** Stufe im Schritt „Schutz“ */
+  tier: SpecTier;
   /** Ergebnis der EUIPO-Prüfung je Begriff (nur vorhanden, wenn geprüft wurde) */
   termStatus?: Record<string, TermStatus>;
+}
+
+/**
+ * muss    = deckt die Kernangabe ab (fest ausgewählt)
+ * kern    = heutiges Angebot aus Auswahl, Website, Pitch (vorausgewählt)
+ * spaeter = sinnvolle Erweiterung für die Zukunft (optional)
+ */
+export type SpecTier = "muss" | "kern" | "spaeter";
+
+const TIER_RANK: Record<SpecTier, number> = { muss: 0, kern: 1, spaeter: 2 };
+
+/** Die wichtigere von zwei Stufen, z. B. wenn eine Klasse aus mehreren Quellen kommt */
+export function higherTier(a: SpecTier, b: SpecTier): SpecTier {
+  return TIER_RANK[a] <= TIER_RANK[b] ? a : b;
 }
 
 /** harmonised = in der EUIPO-Datenbank, unknown = nicht gefunden, wird individuell geprüft */

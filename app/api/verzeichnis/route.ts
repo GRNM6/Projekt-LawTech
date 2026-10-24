@@ -68,9 +68,10 @@ Regeln für das Verzeichnis:
 - Nutze die aktuelle Nizza-Klassifikation.
 - Verwende für "terms" möglichst exakt die deutschen Begriffe aus der harmonisierten Datenbank der EUIPO (TMclass), damit die Anmeldung zügig akzeptiert wird.
 - Keine bloßen Klassenüberschriften, sondern konkrete Begriffe.
-- Die Angabe "Muss auf jeden Fall geschützt sein" ist die wichtigste Information. Alles, was sie umfasst, muss vollständig abgedeckt und als core: true markiert sein.
-- Decke das Kerngeschäft vollständig ab (core: true).
-- Ergänze realistische, naheliegende Erweiterungen aus den Zukunftsplänen oder typischen Branchenmustern als optionale Klassen (core: false). Keine fernliegenden Klassen.
+- Ordne jede Klasse genau einer Stufe ("tier") zu:
+  - "muss": Die Angabe "Muss auf jeden Fall geschützt sein" ist die wichtigste Information. Alle Klassen, die sie abdecken, sind "muss" und müssen vollständig abgedeckt sein.
+  - "kern": Was die Person heute anbietet oder konkret plant (Auswahl, Beschreibung, Website, Pitch-Dokument) und nicht schon "muss" ist.
+  - "spaeter": Realistische, naheliegende Erweiterungen aus den Zukunftsplänen. Keine fernliegenden Klassen und keine Vorratsanmeldung – die Marke muss innerhalb von 5 Jahren nach Eintragung benutzt werden.
 - Bei Software in der Regel Klasse 9 (herunterladbar) und Klasse 42 (SaaS, Plattformen) prüfen.
 - Pro Klasse 2 bis 8 Begriffe. Insgesamt für die meisten Gründungen 1 bis 5 Klassen.
 - Jede Klasse nur einmal.
@@ -100,9 +101,9 @@ const TOOL = {
             title: { type: "string" },
             why: { type: "string" },
             terms: { type: "array", items: { type: "string" } },
-            core: { type: "boolean" },
+            tier: { type: "string", enum: ["muss", "kern", "spaeter"] },
           },
-          required: ["classNumber", "title", "why", "terms", "core"],
+          required: ["classNumber", "title", "why", "terms", "tier"],
         },
       },
       hints: { type: "array", items: { type: "string" } },
@@ -180,7 +181,7 @@ function sanitize(input: unknown): Pick<SpecResult, "summary" | "classes" | "hin
       title: String(c.title ?? `Klasse ${n}`),
       why: String(c.why ?? ""),
       terms,
-      core: Boolean(c.core),
+      tier: c.tier === "muss" || c.tier === "spaeter" ? c.tier : "kern",
     });
   }
 

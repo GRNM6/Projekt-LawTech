@@ -12,7 +12,7 @@ nach den Vorgaben von Geronimo, keine eigenmächtigen Umbauten.
   - Aufklappbare „Vor- und Nachteile“ unter Wort-, Wort-Bild- und Bildmarke
   - Statt eines Namens bis zu drei Optionen (`markNames`; Option 1 Pflicht, 2 und 3 optional).
     Später soll das System prüfen, welcher Name die besten Eintragungschancen hat (noch nicht gebaut)
-  - Offene Rückfragen: Sollen alle drei Namen Pflicht sein? Andere Überschrift bei „Bildmarke“?
+  - Entschieden 24.10.: Nur der erste Name ist Pflicht. Überschrift bleibt auch bei „Bildmarke“ gleich.
   - 24.10.: Kategorien heißen jetzt Wortmarke, Wort-/Bildmarke, Bildmarke; darunter umgangssprachlich, was geschützt wird
 ### Beschlossen am 24.10.: neue Schrittfolge (8 statt 7 Schritte)
 1. **Marke** (fertig, s. o.)
@@ -45,7 +45,9 @@ vorerst weggelassen.
       „Unterlagen“; Vorschläge werden vorausgewählt („✨ Passt zu dir“), übrige Bereiche nach Gruppen
       unter „➕ Weitere Bereiche“; alte 17er-Chipliste entfernt. Demo: Schlagwortsuche in Kern + Website.
       Gemeinsame KI-Bausteine nach `lib/quellen.ts` ausgelagert
-- [ ] Schritt „Schutz“ dreistufig
+- [x] Schritt „Schutz“ dreistufig (24.10.): `SpecClass.tier` = muss | kern | spaeter (ersetzt `core`).
+      🎯 Muss-Schutz fest ausgewählt (nicht abwählbar, Hinweis auf Schritt „Kern“) · 💼 Kerngeschäft
+      vorausgewählt · 🔮 Für später freiwillig, mit Hinweis auf die Benutzungspflicht
 - [ ] Danach weiter nach Geronimos Vorgaben: Zukunft, Anmelder, Schutz
 
 ## Hinweis zu Git auf Geronimos Mac

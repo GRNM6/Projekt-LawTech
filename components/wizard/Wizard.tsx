@@ -58,7 +58,8 @@ export function Wizard() {
       if (!res.ok) throw new Error(json.error ?? "Das Verzeichnis konnte nicht erstellt werden.");
 
       setSpec(json);
-      setSelected(json.classes.filter((c) => c.core).map((c) => c.classNumber));
+      // Muss-Schutz und Kerngeschäft vorauswählen, „Für später“ bleibt freiwillig
+      setSelected(json.classes.filter((c) => c.tier !== "spaeter").map((c) => c.classNumber));
       setSpecKey(key);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Unbekannter Fehler.");
@@ -107,6 +108,8 @@ export function Wizard() {
   }
 
   function toggleClass(n: number) {
+    // Muss-Schutz ist fest ausgewählt – ändern lässt er sich über den Schritt „Kern“
+    if (spec?.classes.some((c) => c.classNumber === n && c.tier === "muss")) return;
     setSelected((s) => (s.includes(n) ? s.filter((x) => x !== n) : [...s, n].sort((a, b) => a - b)));
   }
 

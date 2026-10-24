@@ -2,8 +2,29 @@
 
 import { useEffect, useState } from "react";
 import { euipoFeeTotal, formatEuro } from "@/lib/fees";
-import type { SpecClass, SpecResult } from "@/lib/types";
+import type { SpecClass, SpecResult, SpecTier } from "@/lib/types";
 import { Callout, StepHeader } from "./ui";
+
+const TIERS: { id: SpecTier; emoji: string; title: string; text: string }[] = [
+  {
+    id: "muss",
+    emoji: "🎯",
+    title: "Muss-Schutz",
+    text: "Das hast du als Herzstück angegeben – deshalb ist es fest dabei. Ändern kannst du das im Schritt „Kern“.",
+  },
+  {
+    id: "kern",
+    emoji: "💼",
+    title: "Dein Kerngeschäft",
+    text: "Was du heute anbietest oder konkret planst. Vorausgewählt – abwählen geht jederzeit.",
+  },
+  {
+    id: "spaeter",
+    emoji: "🔮",
+    title: "Für später",
+    text: "Nur sinnvoll, wenn du es innerhalb von 5 Jahren nach der Eintragung wirklich anbietest – sonst kannst du den Schutz dafür verlieren. Nachträglich ergänzen geht aber auch nicht. Wähle also gezielt.",
+  },
+];
 
 const LOADING_MESSAGES = [
   "Lese mir dein Projekt durch …",
@@ -45,8 +66,7 @@ export function StepSpec({
     );
   }
 
-  const core = spec.classes.filter((c) => c.core);
-  const optional = spec.classes.filter((c) => !c.core);
+  const byTier = (tier: SpecTier) => spec.classes.filter((c) => c.tier === tier);
 
   return (
     <div>
@@ -66,30 +86,29 @@ export function StepSpec({
         ))}
       </div>
 
-      {core.length > 0 && (
-        <section>
-          <h2 className="mb-3 font-display text-xl font-bold">Dein Kerngeschäft</h2>
-          <div className="space-y-3">
-            {core.map((c) => (
-              <ClassCard key={c.classNumber} c={c} checked={selected.includes(c.classNumber)} onToggle={onToggle} />
-            ))}
-          </div>
-        </section>
-      )}
-
-      {optional.length > 0 && (
-        <section className="mt-8">
-          <h2 className="font-display text-xl font-bold">Auch spannend für später</h2>
-          <p className="mb-3 text-sm text-muted">
-            Optional – lohnt sich, wenn du diese Pläne wirklich angehst. Nachträglich erweitern geht nämlich nicht.
-          </p>
-          <div className="space-y-3">
-            {optional.map((c) => (
-              <ClassCard key={c.classNumber} c={c} checked={selected.includes(c.classNumber)} onToggle={onToggle} />
-            ))}
-          </div>
-        </section>
-      )}
+      {TIERS.map((t) => {
+        const classes = byTier(t.id);
+        if (classes.length === 0) return null;
+        return (
+          <section key={t.id} className="mt-8 first-of-type:mt-0">
+            <h2 className="font-display text-xl font-bold">
+              {t.emoji} {t.title}
+            </h2>
+            <p className="mb-3 text-sm text-muted">{t.text}</p>
+            <div className="space-y-3">
+              {classes.map((c) => (
+                <ClassCard
+                  key={c.classNumber}
+                  c={c}
+                  checked={selected.includes(c.classNumber)}
+                  locked={t.id === "muss"}
+                  onToggle={onToggle}
+                />
+              ))}
+            </div>
+          </section>
+        );
+      })}
 
       {spec.hints.length > 0 && (
         <div className="mt-8">
@@ -121,7 +140,17 @@ export function StepSpec({
   );
 }
 
-function ClassCard({ c, checked, onToggle }: { c: SpecClass; checked: boolean; onToggle: (n: number) => void }) {
+function ClassCard({
+  c,
+  checked,
+  locked,
+  onToggle,
+}: {
+  c: SpecClass;
+  checked: boolean;
+  locked: boolean;
+  onToggle: (n: number) => void;
+}) {
   const allHarmonised = c.termStatus !== undefined && c.terms.every((t) => c.termStatus?.[t] === "harmonised");
   return (
     <div
@@ -129,10 +158,11 @@ function ClassCard({ c, checked, onToggle }: { c: SpecClass; checked: boolean; o
         checked ? "border-violet shadow-[4px_4px_0_0_#6c4cf5]" : "border-line opacity-80"
       }`}
     >
-      <label className="flex cursor-pointer items-start gap-4 p-4">
+      <label className={`flex items-start gap-4 p-4 ${locked ? "cursor-default" : "cursor-pointer"}`}>
         <input
           type="checkbox"
           checked={checked}
+          disabled={locked}
           onChange={() => onToggle(c.classNumber)}
           className="mt-1 h-5 w-5 shrink-0 accent-violet"
         />
@@ -140,6 +170,7 @@ function ClassCard({ c, checked, onToggle }: { c: SpecClass; checked: boolean; o
           <span className="flex flex-wrap items-center gap-2">
             <span className="font-semibold">{c.title}</span>
             <span className="rounded-full bg-violet-soft px-2 py-0.5 text-xs font-medium">Klasse {c.classNumber}</span>
+            {locked && <span className="text-xs text-muted">🔒 fest dabei</span>}
           </span>
           <span className="mt-1 block text-sm text-muted">{c.why}</span>
         </span>
