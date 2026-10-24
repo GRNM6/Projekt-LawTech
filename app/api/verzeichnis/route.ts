@@ -178,6 +178,7 @@ Regeln für das Verzeichnis:
 - Nutze die aktuelle Nizza-Klassifikation.
 - Verwende für "terms" möglichst exakt die deutschen Begriffe aus der harmonisierten Datenbank der EUIPO (TMclass), damit die Anmeldung zügig akzeptiert wird.
 - Keine bloßen Klassenüberschriften, sondern konkrete Begriffe.
+- Die Angabe "Muss auf jeden Fall geschützt sein" ist die wichtigste Information. Alles, was sie umfasst, muss vollständig abgedeckt und als core: true markiert sein.
 - Decke das Kerngeschäft vollständig ab (core: true).
 - Ergänze realistische, naheliegende Erweiterungen aus den Zukunftsplänen oder typischen Branchenmustern als optionale Klassen (core: false). Keine fernliegenden Klassen.
 - Bei Software in der Regel Klasse 9 (herunterladbar) und Klasse 42 (SaaS, Plattformen) prüfen.
@@ -231,6 +232,7 @@ function buildUserPrompt(data: WizardData, websiteText: string | null, hasPdf: b
       data.markType === "bild" ? "(kein Name, reines Logo)" : filledMarkNames(data).join(" | ") || "-"
     }`,
     `Markenform: ${markTypeLabel}`,
+    `Muss auf jeden Fall geschützt sein (wichtigste Angabe): ${data.coreProtection || "-"}`,
     `Anmelder sitzt in: ${countryName(data.country)}`,
     `Angebot (Auswahl): ${data.offerings.map((id) => optionLabel(OFFERINGS, id)).join(", ") || "-"}`,
     `Beschreibung in eigenen Worten: ${data.description || "-"}`,

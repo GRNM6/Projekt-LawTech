@@ -2,6 +2,7 @@ import type { WizardData } from "@/lib/types";
 
 export const STEPS = [
   { id: "name", emoji: "✏️", label: "Marke" },
+  { id: "kern", emoji: "🎯", label: "Kern" },
   { id: "what", emoji: "💬", label: "Projekt" },
   { id: "more", emoji: "🔍", label: "Mehr Infos" },
   { id: "future", emoji: "🔮", label: "Zukunft" },
@@ -22,6 +23,9 @@ export function canContinue(step: StepId, data: WizardData, hasSelection: boolea
       if (data.markType !== "bild" && data.markNames[0].trim().length < 2) return false;
       if (data.markType !== "wort" && !data.logoDataUrl) return false;
       return true;
+    case "kern":
+      // Ein kurzer Satz reicht – Hauptsache, die wichtigste Angabe ist da
+      return data.coreProtection.trim().length >= 5;
     case "what":
       return data.offerings.length > 0 || data.description.trim().length >= 20;
     case "more":
@@ -52,6 +56,7 @@ export function specInputKey(data: WizardData, pitch: File | null): string {
   return JSON.stringify([
     data.markNames,
     data.markType,
+    data.coreProtection,
     data.offerings,
     data.description,
     data.website,

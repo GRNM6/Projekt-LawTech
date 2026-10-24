@@ -9,7 +9,10 @@ export interface WizardData {
   markType: MarkType;
   logoDataUrl: string | null;
 
-  // Schritt 2: Was machst du?
+  // Schritt 2: Kern – was muss auf jeden Fall geschützt sein?
+  coreProtection: string;
+
+  // Schritt 3: Was machst du?
   offerings: string[];
   description: string;
 
@@ -79,6 +82,7 @@ export const emptyWizardData: WizardData = {
   markNames: ["", "", ""],
   markType: "wort",
   logoDataUrl: null,
+  coreProtection: "",
   offerings: [],
   description: "",
   website: "",

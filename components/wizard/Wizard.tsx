@@ -4,13 +4,14 @@ import Link from "next/link";
 import { useState } from "react";
 import { BRAND } from "@/lib/brand";
 import { emptyWizardData, type SpecResult, type WizardData } from "@/lib/types";
-import { StepFuture, StepMore, StepName, StepWhat, StepWho } from "./InputSteps";
+import { StepFuture, StepKern, StepMore, StepName, StepWhat, StepWho } from "./InputSteps";
 import { StepSpec } from "./StepSpec";
 import { StepSummary } from "./StepSummary";
 import { canContinue, specInputKey, STEPS, type StepId } from "./steps";
 
 const NEXT_LABELS: Partial<Record<StepId, string>> = {
   name: "Klingt gut, weiter →",
+  kern: "Weiter →",
   what: "Weiter →",
   more: "Weiter →",
   future: "Weiter →",
@@ -114,6 +115,7 @@ export function Wizard() {
       <main className="mx-auto w-full max-w-3xl flex-1 px-5 py-10">
         <div key={step.id} className="animate-step-in">
           {step.id === "name" && <StepName data={data} update={update} />}
+          {step.id === "kern" && <StepKern data={data} update={update} />}
           {step.id === "what" && <StepWhat data={data} update={update} />}
           {step.id === "more" && (
             <StepMore data={data} update={update} pitchFile={pitchFile} setPitchFile={setPitchFile} />

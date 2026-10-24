@@ -16,7 +16,7 @@ export function StepSummary({
   data: WizardData;
   spec: SpecResult;
   selected: number[];
-  onEdit: (step: "name" | "who" | "spec") => void;
+  onEdit: (step: "name" | "kern" | "who" | "spec") => void;
 }) {
   const [confirmed, setConfirmed] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -62,6 +62,10 @@ export function StepSummary({
               Weitere Optionen: {markNames.slice(1).join(" · ")}
             </p>
           )}
+        </SummaryCard>
+
+        <SummaryCard title="Muss auf jeden Fall geschützt sein" onEdit={() => onEdit("kern")}>
+          <p className="whitespace-pre-line">{data.coreProtection}</p>
         </SummaryCard>
 
         <SummaryCard title="Inhaber" onEdit={() => onEdit("who")}>

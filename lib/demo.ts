@@ -1,3 +1,4 @@
+import { BEREICHE } from "./bereiche";
 import { primaryMarkName, type SpecClass, type SpecResult, type WizardData } from "./types";
 
 /**
@@ -167,6 +168,44 @@ const BY_ID: Record<string, Template[]> = {
   merch: [],
 };
 
+/** Bereiche aus dem Katalog, für die es eine Demo-Vorlage gibt */
+const BEREICH_TO_TEMPLATE: Record<string, string> = {
+  app: "app",
+  plattform: "app",
+  it: "app",
+  shop: "shop",
+  laden: "shop",
+  kleidung: "fashion",
+  gastro: "food",
+  suesses: "foodproducts",
+  getraenke: "foodproducts",
+  beratung: "consulting",
+  bildung: "courses",
+  events: "events",
+  medien: "media",
+  design: "agency",
+  kosmetik: "beauty",
+  praxis: "health",
+  fitness: "fitness",
+  finanzen: "finance",
+  reisen: "travel",
+  moebel: "home",
+  recht: "legal",
+};
+
+/** Demo-Ersatz für die KI: Schlagwortsuche in der Kernangabe */
+function templatesFromCoreText(text: string): string[] {
+  const lower = text.toLowerCase();
+  const words = lower.split(/[^\p{L}\p{N}-]+/u).filter(Boolean);
+  // Kurze Begriffe („it“, „pr“) nur als ganzes Wort, sonst würde z. B. „mit“ treffen
+  const matches = (k: string) =>
+    k.includes(" ") ? lower.includes(k) : words.some((w) => (k.length <= 3 ? w === k : w.includes(k)));
+  const ids = BEREICHE.filter((b) => b.keywords.some(matches))
+    .map((b) => BEREICH_TO_TEMPLATE[b.id])
+    .filter((id): id is string => Boolean(id));
+  return Array.from(new Set(ids));
+}
+
 /** Zukunftspläne, die auf eine Angebots-ID verweisen */
 const FUTURE_TO_OFFERING: Record<string, string> = {
   merch: "fashion",
@@ -192,6 +231,7 @@ export function buildDemoSpec(data: WizardData, sourcesUsed: string[]): SpecResu
     }
   };
 
+  templatesFromCoreText(data.coreProtection ?? "").forEach((id) => add(id, true));
   data.offerings.forEach((id) => add(id, true));
   data.futurePlans.forEach((id) => {
     const offering = FUTURE_TO_OFFERING[id];

@@ -229,7 +229,85 @@ export function StepName({ data, update }: { data: WizardData; update: Update })
 }
 
 /* ------------------------------------------------------------------ */
-/* 2 · Was machst du?                                                   */
+/* 2 · Kern                                                             */
+/* ------------------------------------------------------------------ */
+
+const PROTECTION_FACTS: { emoji: string; title: string; text: string }[] = [
+  {
+    emoji: "🎯",
+    title: "Nur das, was du angibst",
+    text: "Deine Marke gilt für die Waren und Dienstleistungen, die du bei der Anmeldung angibst – und für sehr ähnliche. Für alles andere dürfen andere denselben Namen nutzen.",
+  },
+  {
+    emoji: "🔒",
+    title: "Später erweitern geht nicht",
+    text: "Die Liste kann man nachträglich nur kürzen, nicht ergänzen. Für etwas Neues braucht es eine neue Anmeldung.",
+  },
+  {
+    emoji: "⏳",
+    title: "10 Jahre, beliebig verlängerbar",
+    text: "Der Schutz gilt ab dem Anmeldetag in allen 27 EU-Staaten und lässt sich alle 10 Jahre gegen Gebühr verlängern.",
+  },
+  {
+    emoji: "✋",
+    title: "Benutzen ist Pflicht",
+    text: "Spätestens 5 Jahre nach der Eintragung musst du die Marke für das Eingetragene wirklich nutzen – sonst kannst du sie dafür verlieren. Deshalb lieber gezielt als „alles auf Vorrat“.",
+  },
+];
+
+function ProtectionInfo() {
+  return (
+    <details className="group rounded-2xl border-2 border-line bg-paper px-4 py-3">
+      <summary className="cursor-pointer font-semibold select-none group-open:mb-3">
+        ℹ️ Was schützt eine Marke eigentlich?
+      </summary>
+      <ul className="space-y-3 text-sm">
+        {PROTECTION_FACTS.map((f) => (
+          <li key={f.title} className="flex gap-3">
+            <span className="text-xl leading-6">{f.emoji}</span>
+            <span>
+              <span className="block font-semibold">{f.title}</span>
+              <span className="text-muted">{f.text}</span>
+            </span>
+          </li>
+        ))}
+      </ul>
+    </details>
+  );
+}
+
+export function StepKern({ data, update }: { data: WizardData; update: Update }) {
+  return (
+    <div>
+      <StepHeader
+        emoji="🎯"
+        title="Was muss auf jeden Fall geschützt sein?"
+        subtitle="Das Herzstück deines Business – das, wofür deine Marke auf keinen Fall fehlen darf."
+      />
+
+      <ProtectionInfo />
+
+      <div className="mt-8">
+        <Field
+          label="In deinen eigenen Worten"
+          hint="Ein, zwei Sätze reichen. Um den Rest kümmern wir uns in den nächsten Schritten."
+        >
+          <textarea
+            className={`${inputClass} min-h-28 resize-y`}
+            value={data.coreProtection}
+            onChange={(e) => update({ coreProtection: e.target.value })}
+            placeholder="z. B. Unsere App, mit der Hundebesitzer Gassi-Partner finden. Das ist der Kern – alles andere kommt später."
+            maxLength={1000}
+            autoFocus
+          />
+        </Field>
+      </div>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* 3 · Was machst du?                                                   */
 /* ------------------------------------------------------------------ */
 
 export function StepWhat({ data, update }: { data: WizardData; update: Update }) {
@@ -274,7 +352,7 @@ export function StepWhat({ data, update }: { data: WizardData; update: Update })
 }
 
 /* ------------------------------------------------------------------ */
-/* 3 · Zeig uns mehr                                                    */
+/* 4 · Zeig uns mehr                                                    */
 /* ------------------------------------------------------------------ */
 
 export function StepMore({
@@ -367,7 +445,7 @@ export function StepMore({
 }
 
 /* ------------------------------------------------------------------ */
-/* 4 · Zukunft                                                          */
+/* 5 · Zukunft                                                          */
 /* ------------------------------------------------------------------ */
 
 export function StepFuture({ data, update }: { data: WizardData; update: Update }) {
@@ -407,7 +485,7 @@ export function StepFuture({ data, update }: { data: WizardData; update: Update 
 }
 
 /* ------------------------------------------------------------------ */
-/* 5 · Anmelder                                                         */
+/* 6 · Anmelder                                                         */
 /* ------------------------------------------------------------------ */
 
 export function StepWho({ data, update }: { data: WizardData; update: Update }) {
