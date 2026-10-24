@@ -36,7 +36,7 @@ vorerst weggelassen.
 
 ### Umsetzung
 - [x] Bereichskatalog `lib/bereiche.ts`: 61 Bereiche in 9 Gruppen, deckt alle 45 Klassen ab
-      (noch nicht eingebunden – wartet auf Abnahme durch Geronimo)
+      (von Geronimo abgenommen 24.10.; im Demo-Modus schon genutzt, als Chips noch nicht)
 - [x] Schritt „Kern“ mit Infofeld (24.10., eingebaut nach „Marke“; Pflichtfeld ab 5 Zeichen; geht als
       wichtigste Angabe an die KI, erscheint in der Zusammenfassung; Demo: Schlagwortsuche im Katalog)
 - [ ] Schrittfolge umstellen (Unterlagen vor Angebot)
