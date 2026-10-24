@@ -14,11 +14,34 @@ nach den Vorgaben von Geronimo, keine eigenmächtigen Umbauten.
     Später soll das System prüfen, welcher Name die besten Eintragungschancen hat (noch nicht gebaut)
   - Offene Rückfragen: Sollen alle drei Namen Pflicht sein? Andere Überschrift bei „Bildmarke“?
   - 24.10.: Kategorien heißen jetzt Wortmarke, Wort-/Bildmarke, Bildmarke; darunter umgangssprachlich, was geschützt wird
-- [ ] **Schritt 2 „Projekt“** – als Nächstes, Vorgaben folgen
-- [ ] Schritt 3 „Mehr Infos“
-- [ ] Schritt 4 „Zukunft“
-- [ ] Schritt 5 „Anmelder“
-- [ ] Schritt 6 „Schutz“
+### Beschlossen am 24.10.: neue Schrittfolge (8 statt 7 Schritte)
+1. **Marke** (fertig, s. o.)
+2. **Kern** (neu): „Was muss auf jeden Fall geschützt sein?“ (Freitext) + aufklappbares Infofeld
+   „Was schützt eine Marke?“: nur angegebene Waren/DL + ähnliche · nachträglich nicht erweiterbar,
+   nur kürzbar · 10 Jahre, verlängerbar, alle 27 EU-Staaten · Benutzungspflicht spätestens 5 Jahre
+   nach Eintragung
+3. **Unterlagen**: Website + Pitch-Deck, beides freiwillig (bisher „Mehr Infos“)
+4. **Angebot**: KI wertet Kern, Website, PDF aus und schlägt Chips aus dem Bereichskatalog vor
+   (vorausgewählt); darunter „Weitere Bereiche“ + Freitext „in eigenen Worten“.
+   Ohne Website/PDF nur anhand der Kernfrage; im Demo-Modus Schlagwortsuche
+5. **Zukunft**
+6. **Anmelder**
+7. **Schutz**: drei Stufen – Muss-Schutz (aus Kernfrage, fest vorausgewählt) · Kerngeschäft ·
+   Für später (mit Hinweis auf Benutzungspflicht)
+8. **Fertig**
+
+Bewusst verworfen: Frage nach Nachahmern/Konkurrenz (weckt falsches Bild – die Anmeldung wirkt nicht
+gegen ältere Rechte; gehört zur späteren Ähnlichkeitsrecherche). Frage „Worum geht es dir vor allem?“
+vorerst weggelassen.
+
+### Umsetzung
+- [x] Bereichskatalog `lib/bereiche.ts`: 61 Bereiche in 9 Gruppen, deckt alle 45 Klassen ab
+      (noch nicht eingebunden – wartet auf Abnahme durch Geronimo)
+- [ ] Schritt „Kern“ mit Infofeld
+- [ ] Schrittfolge umstellen (Unterlagen vor Angebot)
+- [ ] KI-Vorschläge für Chips (neue API-Route) + Demo-Schlagwortsuche
+- [ ] Schritt „Schutz“ dreistufig
+- [ ] Danach weiter nach Geronimos Vorgaben: Zukunft, Anmelder, Schutz
 
 ## Hinweis zu Git auf Geronimos Mac
 Im aktuellen Netzwerk ist GitHub über SSH-Port 22 gesperrt („Connection refused“).
@@ -43,7 +66,7 @@ git pull ssh://git@ssh.github.com:443/GRNM6/projekt-lawtech.git anmeldeprozess-o
 - Fokus vorerst nur auf EUIPO-Unionsmarken
 
 ## Nächste Schritte
-1. **Schritte 1–6 des Anmeldeprozesses optimieren** (läuft, siehe oben – weiter mit Schritt 2)
+1. **Schritte 1–6 des Anmeldeprozesses optimieren** (läuft, siehe oben – neue Schrittfolge beschlossen)
 2. Claude-API-Schlüssel hinterlegen, damit echte Verzeichnisse entstehen
 3. Ähnlichkeitsrecherche über die EUIPO Trademark Search API
 4. Online stellen (Vercel)
