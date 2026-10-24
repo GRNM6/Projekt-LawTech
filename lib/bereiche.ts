@@ -127,3 +127,22 @@ export const BEREICHE: Bereich[] = [
 export function bereichById(id: string): Bereich | undefined {
   return BEREICHE.find((b) => b.id === id);
 }
+
+/** Anzeigename mit Emoji, z. B. „📱 App oder Software“ */
+export function bereichLabel(id: string): string {
+  const b = bereichById(id);
+  return b ? `${b.emoji} ${b.label}` : id;
+}
+
+/**
+ * Einfache Schlagwortsuche: welche Bereiche passen zu einem Text?
+ * Dient als Ersatz für die KI im Demo-Modus.
+ */
+export function matchBereiche(text: string): string[] {
+  const lower = text.toLowerCase();
+  const words = lower.split(/[^\p{L}\p{N}-]+/u).filter(Boolean);
+  // Kurze Begriffe („it“, „pr“) nur als ganzes Wort, sonst würde z. B. „mit“ treffen
+  const matches = (k: string) =>
+    k.includes(" ") ? lower.includes(k) : words.some((w) => (k.length <= 3 ? w === k : w.includes(k)));
+  return BEREICHE.filter((b) => b.keywords.some(matches)).map((b) => b.id);
+}

@@ -3,11 +3,11 @@
 import Link from "next/link";
 import { useState } from "react";
 import { BRAND } from "@/lib/brand";
-import { emptyWizardData, type SpecResult, type WizardData } from "@/lib/types";
+import { emptyWizardData, type SpecResult, type SuggestResult, type WizardData } from "@/lib/types";
 import { StepFuture, StepKern, StepMore, StepName, StepWhat, StepWho } from "./InputSteps";
 import { StepSpec } from "./StepSpec";
 import { StepSummary } from "./StepSummary";
-import { canContinue, specInputKey, STEPS, type StepId } from "./steps";
+import { canContinue, specInputKey, STEPS, suggestInputKey, type StepId } from "./steps";
 
 const NEXT_LABELS: Partial<Record<StepId, string>> = {
   name: "Klingt gut, weiter →",
@@ -29,6 +29,12 @@ export function Wizard() {
   const [selected, setSelected] = useState<number[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Bereichs-Vorschläge für den Schritt „Angebot“
+  const [suggestion, setSuggestion] = useState<SuggestResult | null>(null);
+  const [suggestKey, setSuggestKey] = useState<string | null>(null);
+  const [suggestLoading, setSuggestLoading] = useState(false);
+  const [suggestError, setSuggestError] = useState<string | null>(null);
 
   const step = STEPS[stepIndex];
   const update = (patch: Partial<WizardData>) => setData((d) => ({ ...d, ...patch }));
@@ -61,8 +67,35 @@ export function Wizard() {
     }
   }
 
+  async function loadSuggestions() {
+    const key = suggestInputKey(data, pitchFile);
+    setSuggestLoading(true);
+    setSuggestError(null);
+    try {
+      const body = new FormData();
+      body.append("data", JSON.stringify({ ...data, logoDataUrl: null }));
+      if (pitchFile) body.append("pitch", pitchFile);
+
+      const res = await fetch("/api/vorschlaege", { method: "POST", body });
+      const json = (await res.json()) as SuggestResult & { error?: string };
+      if (!res.ok) throw new Error(json.error ?? "Die Vorschläge konnten nicht erstellt werden.");
+
+      setSuggestion(json);
+      setSuggestKey(key);
+      // Vorschläge vorauswählen, eigene Auswahl bleibt erhalten
+      setData((d) => ({ ...d, offerings: Array.from(new Set([...d.offerings, ...json.suggested])) }));
+    } catch (e) {
+      setSuggestError(e instanceof Error ? e.message : "Unbekannter Fehler.");
+    } finally {
+      setSuggestLoading(false);
+    }
+  }
+
   function next() {
     if (!canContinue(step.id, data, selected.length > 0)) return;
+    if (step.id === "more" && suggestInputKey(data, pitchFile) !== suggestKey) {
+      void loadSuggestions();
+    }
     if (step.id === "who" && specInputKey(data, pitchFile) !== specKey) {
       void generateSpec();
     }
@@ -78,7 +111,8 @@ export function Wizard() {
   }
 
   const showNav = step.id !== "summary" && !(step.id === "spec" && (loading || error || !spec));
-  const nextEnabled = canContinue(step.id, data, selected.length > 0);
+  const nextEnabled =
+    canContinue(step.id, data, selected.length > 0) && !(step.id === "what" && suggestLoading);
 
   return (
     <div className="flex flex-1 flex-col">
@@ -116,7 +150,16 @@ export function Wizard() {
         <div key={step.id} className="animate-step-in">
           {step.id === "name" && <StepName data={data} update={update} />}
           {step.id === "kern" && <StepKern data={data} update={update} />}
-          {step.id === "what" && <StepWhat data={data} update={update} />}
+          {step.id === "what" && (
+            <StepWhat
+              data={data}
+              update={update}
+              suggestion={suggestion}
+              loading={suggestLoading}
+              error={suggestError}
+              onRetry={() => void loadSuggestions()}
+            />
+          )}
           {step.id === "more" && (
             <StepMore data={data} update={update} pitchFile={pitchFile} setPitchFile={setPitchFile} />
           )}

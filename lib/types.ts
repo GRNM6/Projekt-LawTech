@@ -49,6 +49,16 @@ export function primaryMarkName(data: Pick<WizardData, "markNames">): string {
   return filledMarkNames(data)[0] ?? "";
 }
 
+/** Antwort der Vorschlags-Route: passende Bereiche aus dem Katalog (`lib/bereiche.ts`) */
+export interface SuggestResult {
+  /** IDs der vorgeschlagenen Bereiche, wichtigste zuerst */
+  suggested: string[];
+  /** Ein Satz, was die KI aus den Angaben herausgelesen hat */
+  summary: string;
+  sourcesUsed: string[];
+  demo: boolean;
+}
+
 /** Eine Klasse im KI-erstellten Waren- und Dienstleistungsverzeichnis. */
 export interface SpecClass {
   classNumber: number;

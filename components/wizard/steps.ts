@@ -3,8 +3,8 @@ import type { WizardData } from "@/lib/types";
 export const STEPS = [
   { id: "name", emoji: "✏️", label: "Marke" },
   { id: "kern", emoji: "🎯", label: "Kern" },
-  { id: "what", emoji: "💬", label: "Projekt" },
-  { id: "more", emoji: "🔍", label: "Mehr Infos" },
+  { id: "more", emoji: "🔍", label: "Unterlagen" },
+  { id: "what", emoji: "💬", label: "Angebot" },
   { id: "future", emoji: "🔮", label: "Zukunft" },
   { id: "who", emoji: "🙋", label: "Anmelder" },
   { id: "spec", emoji: "🛡️", label: "Schutz" },
@@ -49,6 +49,11 @@ export function canContinue(step: StepId, data: WizardData, hasSelection: boolea
     case "summary":
       return true;
   }
+}
+
+/** Fingerabdruck der Angaben, aus denen die Bereichs-Vorschläge entstehen */
+export function suggestInputKey(data: WizardData, pitch: File | null): string {
+  return JSON.stringify([data.coreProtection, data.website, pitch ? `${pitch.name}:${pitch.size}` : null]);
 }
 
 /** Fingerabdruck der Angaben, die das Verzeichnis beeinflussen */

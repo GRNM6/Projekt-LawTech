@@ -4,27 +4,6 @@ export interface ChipOption {
   label: string;
 }
 
-/** Was der Nutzer anbietet – bewusst Alltagssprache statt Nizza-Klassen. */
-export const OFFERINGS: ChipOption[] = [
-  { id: "app", emoji: "📱", label: "App oder Software" },
-  { id: "shop", emoji: "🛒", label: "Online-Shop" },
-  { id: "fashion", emoji: "👕", label: "Kleidung & Merch" },
-  { id: "food", emoji: "🍕", label: "Restaurant, Café, Catering" },
-  { id: "foodproducts", emoji: "🥤", label: "Lebensmittel & Getränke" },
-  { id: "consulting", emoji: "💼", label: "Beratung" },
-  { id: "courses", emoji: "🎓", label: "Kurse & Coaching" },
-  { id: "events", emoji: "🎉", label: "Events" },
-  { id: "media", emoji: "🎙️", label: "Podcast, Video, Medien" },
-  { id: "agency", emoji: "🎨", label: "Agentur & Design" },
-  { id: "beauty", emoji: "💄", label: "Kosmetik & Pflege" },
-  { id: "health", emoji: "🩺", label: "Gesundheit" },
-  { id: "fitness", emoji: "🏋️", label: "Sport & Fitness" },
-  { id: "finance", emoji: "💶", label: "Finanzen" },
-  { id: "travel", emoji: "✈️", label: "Reisen" },
-  { id: "home", emoji: "🛋️", label: "Möbel & Deko" },
-  { id: "legal", emoji: "⚖️", label: "Rechtliches" },
-];
-
 /** Zukunftspläne – damit die Marke mitwachsen kann. */
 export const FUTURE_PLANS: ChipOption[] = [
   { id: "merch", emoji: "🧢", label: "Eigenes Merch" },

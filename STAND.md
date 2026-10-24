@@ -39,8 +39,12 @@ vorerst weggelassen.
       (von Geronimo abgenommen 24.10.; im Demo-Modus schon genutzt, als Chips noch nicht)
 - [x] Schritt „Kern“ mit Infofeld (24.10., eingebaut nach „Marke“; Pflichtfeld ab 5 Zeichen; geht als
       wichtigste Angabe an die KI, erscheint in der Zusammenfassung; Demo: Schlagwortsuche im Katalog)
-- [ ] Schrittfolge umstellen (Unterlagen vor Angebot)
-- [ ] KI-Vorschläge für Chips (neue API-Route) + Demo-Schlagwortsuche
+- [x] Schrittfolge umgestellt (24.10.): Marke → Kern → Unterlagen → Angebot → Zukunft → Anmelder →
+      Schutz → Fertig
+- [x] KI-Vorschläge für Chips (24.10.): neue Route `app/api/vorschlaege`, aufgerufen beim Verlassen von
+      „Unterlagen“; Vorschläge werden vorausgewählt („✨ Passt zu dir“), übrige Bereiche nach Gruppen
+      unter „➕ Weitere Bereiche“; alte 17er-Chipliste entfernt. Demo: Schlagwortsuche in Kern + Website.
+      Gemeinsame KI-Bausteine nach `lib/quellen.ts` ausgelagert
 - [ ] Schritt „Schutz“ dreistufig
 - [ ] Danach weiter nach Geronimos Vorgaben: Zukunft, Anmelder, Schutz
 

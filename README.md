@@ -1,7 +1,7 @@
 # Markenstart (Arbeitstitel)
 
 Spielerischer Assistent für die Anmeldung einer **Unionsmarke bei der EUIPO** – ohne Juristendeutsch.
-Nutzer erzählen von ihrem Projekt (Auswahl, eigene Worte, Website, Pitch-PDF); eine KI erstellt daraus
+Nutzer erzählen von ihrem Projekt (Kernangabe, Website, Pitch-PDF, vorgeschlagene Bereiche, eigene Worte); eine KI erstellt daraus
 das Waren- und Dienstleistungsverzeichnis.
 
 ## Lokal starten
@@ -41,10 +41,13 @@ Nicht harmonisierte Begriffe werden automatisch durch passende Vorschläge der E
 | `app/page.tsx` | Startseite |
 | `app/anmelden/page.tsx` | Anmelde-Assistent |
 | `components/wizard/` | Die einzelnen Schritte des Assistenten |
+| `app/api/vorschlaege/route.ts` | KI-Vorschläge für passende Bereiche (Chips) im Schritt „Angebot“ |
 | `app/api/verzeichnis/route.ts` | KI-Erstellung des Waren- und Dienstleistungsverzeichnisses |
+| `lib/quellen.ts` | Gemeinsame Bausteine der KI-Routen (Website auslesen, PDF, Claude-Aufruf) |
+| `lib/bereiche.ts` | Katalog der auswählbaren Bereiche – deckt alle 45 Klassen ab |
 | `lib/euipo.ts` | Anbindung an die EUIPO-API |
 | `lib/fees.ts` | EUIPO-Amtsgebühren |
-| `lib/options.ts` | Auswahl-Chips, Länderliste |
+| `lib/options.ts` | Zukunftspläne, Länderliste |
 | `lib/demo.ts` | Beispieldaten für den Demo-Modus |
 
 ## Noch offen

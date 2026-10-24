@@ -1,8 +1,9 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { COUNTRIES, FUTURE_PLANS, isEea, OFFERINGS } from "@/lib/options";
-import { filledMarkNames, primaryMarkName, type MarkType, type WizardData } from "@/lib/types";
+import { BEREICH_GROUPS, BEREICHE, bereichById } from "@/lib/bereiche";
+import { COUNTRIES, FUTURE_PLANS, isEea } from "@/lib/options";
+import { filledMarkNames, primaryMarkName, type MarkType, type SuggestResult, type WizardData } from "@/lib/types";
 import { Callout, Chip, ChoiceCard, Field, inputClass, StepHeader } from "./ui";
 
 type Update = (patch: Partial<WizardData>) => void;
@@ -307,10 +308,40 @@ export function StepKern({ data, update }: { data: WizardData; update: Update })
 }
 
 /* ------------------------------------------------------------------ */
-/* 3 · Was machst du?                                                   */
+/* 4 · Angebot (kommt nach „Unterlagen“, damit die KI vorschlagen kann)  */
 /* ------------------------------------------------------------------ */
 
-export function StepWhat({ data, update }: { data: WizardData; update: Update }) {
+function BereichChip({ id, data, update }: { id: string; data: WizardData; update: Update }) {
+  const b = bereichById(id);
+  if (!b) return null;
+  return (
+    <Chip selected={data.offerings.includes(id)} onClick={() => update({ offerings: toggle(data.offerings, id) })}>
+      {b.emoji} {b.label}
+    </Chip>
+  );
+}
+
+export function StepWhat({
+  data,
+  update,
+  suggestion,
+  loading,
+  error,
+  onRetry,
+}: {
+  data: WizardData;
+  update: Update;
+  suggestion: SuggestResult | null;
+  loading: boolean;
+  error: string | null;
+  onRetry: () => void;
+}) {
+  const suggested = loading || error ? [] : (suggestion?.suggested ?? []);
+  const hasSuggestions = suggested.length > 0;
+  // Selbst gewählte Bereiche, die nicht vorgeschlagen wurden, bleiben oben sichtbar
+  const ownPicks = data.offerings.filter((id) => !suggested.includes(id));
+  const shown = new Set([...suggested, ...ownPicks]);
+
   return (
     <div>
       <StepHeader
@@ -318,25 +349,87 @@ export function StepWhat({ data, update }: { data: WizardData; update: Update })
         title={`Was steckt hinter ${
           data.markType !== "bild" && primaryMarkName(data) ? `„${primaryMarkName(data)}“` : "deiner Marke"
         }?`}
-        subtitle="Tipp einfach alles an, was passt. Mehrfachauswahl ausdrücklich erwünscht."
+        subtitle={
+          hasSuggestions
+            ? "Das haben wir für dich vorbereitet. Passt etwas nicht? Einfach antippen zum An- und Abwählen."
+            : "Tipp einfach alles an, was passt. Mehrfachauswahl ausdrücklich erwünscht."
+        }
       />
 
-      <div className="flex flex-wrap gap-2.5">
-        {OFFERINGS.map((o) => (
-          <Chip
-            key={o.id}
-            selected={data.offerings.includes(o.id)}
-            onClick={() => update({ offerings: toggle(data.offerings, o.id) })}
-          >
-            {o.emoji} {o.label}
-          </Chip>
-        ))}
-      </div>
+      {loading && (
+        <div className="flex items-center gap-4 rounded-2xl border-2 border-dashed border-line bg-paper p-5">
+          <span className="animate-float text-4xl">🤖</span>
+          <span>
+            <span className="block font-semibold">Ich schaue mir deine Angaben an …</span>
+            <span className="text-sm text-muted">Gleich siehst du, welche Bereiche zu dir passen.</span>
+          </span>
+        </div>
+      )}
+
+      {error && !loading && (
+        <Callout tone="coral">
+          {error}{" "}
+          <button type="button" onClick={onRetry} className="font-semibold underline">
+            Nochmal versuchen
+          </button>
+        </Callout>
+      )}
+
+      {(hasSuggestions || ownPicks.length > 0) && (
+        <section>
+          {hasSuggestions && (
+            <>
+              <h2 className="mb-1 font-display text-xl font-bold">✨ Passt zu dir</h2>
+              {suggestion?.summary && <p className="mb-2 text-sm text-muted">{suggestion.summary}</p>}
+              <div className="mb-3 flex flex-wrap gap-2 text-xs">
+                {suggestion?.demo && (
+                  <span className="rounded-full bg-coral px-3 py-1 font-semibold text-white">Demo-Modus</span>
+                )}
+                {suggestion?.sourcesUsed.map((s) => (
+                  <span key={s} className="rounded-full bg-mint-soft px-3 py-1">
+                    ✓ {s} ausgewertet
+                  </span>
+                ))}
+              </div>
+            </>
+          )}
+          {!hasSuggestions && <h2 className="mb-3 font-display text-xl font-bold">Deine Auswahl</h2>}
+          <div className="flex flex-wrap gap-2.5">
+            {[...suggested, ...ownPicks].map((id) => (
+              <BereichChip key={id} id={id} data={data} update={update} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {!loading && (
+        <details className="group mt-8 rounded-2xl border-2 border-line bg-paper px-4 py-3" open={!hasSuggestions}>
+          <summary className="cursor-pointer font-semibold select-none group-open:mb-4">
+            ➕ {hasSuggestions ? "Weitere Bereiche" : "Alle Bereiche"}
+          </summary>
+          <div className="space-y-5">
+            {BEREICH_GROUPS.map((g) => {
+              const items = BEREICHE.filter((b) => b.group === g.id && !shown.has(b.id));
+              if (items.length === 0) return null;
+              return (
+                <div key={g.id}>
+                  <h3 className="mb-2 text-sm font-semibold text-muted">{g.label}</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {items.map((b) => (
+                      <BereichChip key={b.id} id={b.id} data={data} update={update} />
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </details>
+      )}
 
       <div className="mt-8">
         <Field
           label="Erklär's uns, als wären wir deine Oma 👵"
-          hint="Ein paar Sätze reichen. Was bietest du an, für wen, und was macht es besonders?"
+          hint="Nicht dabei, was du machst? Beschreib es einfach hier – die KI findet die passende Klasse."
         >
           <textarea
             className={`${inputClass} min-h-32 resize-y`}
@@ -352,7 +445,7 @@ export function StepWhat({ data, update }: { data: WizardData; update: Update })
 }
 
 /* ------------------------------------------------------------------ */
-/* 4 · Zeig uns mehr                                                    */
+/* 3 · Unterlagen (Website & Pitch-Deck)                                */
 /* ------------------------------------------------------------------ */
 
 export function StepMore({
@@ -436,7 +529,7 @@ export function StepMore({
         </div>
 
         <Callout tone="violet">
-          🔒 Deine Unterlagen nutzen wir nur, um dein Verzeichnis zu erstellen. Noch nichts davon fertig? Kein
+          🔒 Deine Unterlagen nutzen wir nur, um dir passende Bereiche vorzuschlagen und dein Verzeichnis zu erstellen. Noch nichts davon fertig? Kein
           Problem – einfach weiter.
         </Callout>
       </div>

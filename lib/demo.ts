@@ -1,4 +1,4 @@
-import { BEREICHE } from "./bereiche";
+import { bereichById, matchBereiche } from "./bereiche";
 import { primaryMarkName, type SpecClass, type SpecResult, type WizardData } from "./types";
 
 /**
@@ -193,17 +193,16 @@ const BEREICH_TO_TEMPLATE: Record<string, string> = {
   recht: "legal",
 };
 
-/** Demo-Ersatz für die KI: Schlagwortsuche in der Kernangabe */
-function templatesFromCoreText(text: string): string[] {
-  const lower = text.toLowerCase();
-  const words = lower.split(/[^\p{L}\p{N}-]+/u).filter(Boolean);
-  // Kurze Begriffe („it“, „pr“) nur als ganzes Wort, sonst würde z. B. „mit“ treffen
-  const matches = (k: string) =>
-    k.includes(" ") ? lower.includes(k) : words.some((w) => (k.length <= 3 ? w === k : w.includes(k)));
-  const ids = BEREICHE.filter((b) => b.keywords.some(matches))
-    .map((b) => BEREICH_TO_TEMPLATE[b.id])
-    .filter((id): id is string => Boolean(id));
-  return Array.from(new Set(ids));
+/** Platzhalter-Klassen für Bereiche ohne eigene Demo-Vorlage */
+function templatesFromCatalog(bereichId: string): Template[] {
+  const b = bereichById(bereichId);
+  if (!b) return [];
+  return b.classes.map((classNumber) => ({
+    classNumber,
+    title: b.label,
+    why: "Beispiel aus dem Demo-Modus – mit KI-Schlüssel steht hier, warum diese Klasse zu dir passt.",
+    terms: [`Beispielbegriff für „${b.label}“ (wird mit KI-Schlüssel individuell erstellt)`],
+  }));
 }
 
 /** Zukunftspläne, die auf eine Angebots-ID verweisen */
@@ -219,8 +218,8 @@ const FUTURE_TO_OFFERING: Record<string, string> = {
 export function buildDemoSpec(data: WizardData, sourcesUsed: string[]): SpecResult {
   const classes = new Map<number, SpecClass>();
 
-  const add = (id: string, core: boolean) => {
-    for (const t of BY_ID[id] ?? []) {
+  const addTemplates = (templates: Template[], core: boolean) => {
+    for (const t of templates) {
       const existing = classes.get(t.classNumber);
       if (existing) {
         existing.terms = Array.from(new Set([...existing.terms, ...t.terms]));
@@ -231,8 +230,16 @@ export function buildDemoSpec(data: WizardData, sourcesUsed: string[]): SpecResu
     }
   };
 
-  templatesFromCoreText(data.coreProtection ?? "").forEach((id) => add(id, true));
-  data.offerings.forEach((id) => add(id, true));
+  const add = (templateId: string, core: boolean) => addTemplates(BY_ID[templateId] ?? [], core);
+  // Bereiche aus dem Katalog: eigene Demo-Vorlage, sonst Platzhalter je Klasse
+  const addBereich = (bereichId: string, core: boolean) => {
+    const templateId = BEREICH_TO_TEMPLATE[bereichId];
+    if (templateId) add(templateId, core);
+    else addTemplates(templatesFromCatalog(bereichId), core);
+  };
+
+  matchBereiche(data.coreProtection ?? "").forEach((id) => addBereich(id, true));
+  data.offerings.forEach((id) => addBereich(id, true));
   data.futurePlans.forEach((id) => {
     const offering = FUTURE_TO_OFFERING[id];
     if (offering) add(offering, false);
