@@ -42,6 +42,8 @@ vorerst weggelassen.
       (von Geronimo abgenommen 24.10.; im Demo-Modus schon genutzt, als Chips noch nicht)
 - [x] Schritt „Kern“ mit Infofeld (24.10., eingebaut nach „Marke“; Pflichtfeld ab 5 Zeichen; geht als
       wichtigste Angabe an die KI, erscheint in der Zusammenfassung; Demo: Schlagwortsuche im Katalog)
+      26.10.: Texte nach Geronimos Vorgabe – Überschrift „Welche Waren und Dienstleistungen sollen
+      unbedingt erfasst werden?“, Infofeld „Was schützt eine EU-Marke eigentlich?“
 - [x] Schrittfolge umgestellt (24.10.): Marke → Kern → Unterlagen → Angebot → Zukunft → Anmelder →
       Schutz → Fertig
 - [x] KI-Vorschläge für Chips (24.10.): neue Route `app/api/vorschlaege`, aufgerufen beim Verlassen von

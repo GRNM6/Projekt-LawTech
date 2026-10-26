@@ -236,12 +236,12 @@ const PROTECTION_FACTS: { emoji: string; title: string; text: string }[] = [
   {
     emoji: "🎯",
     title: "Nur das, was du angibst",
-    text: "Deine Marke gilt für die Waren und Dienstleistungen, die du bei der Anmeldung angibst – und für sehr ähnliche. Für alles andere dürfen andere denselben Namen nutzen.",
+    text: "Deine Marke gilt für die Waren und Dienstleistungen, die du bei der Anmeldung angibst – und für sehr ähnliche.",
   },
   {
     emoji: "🔒",
     title: "Später erweitern geht nicht",
-    text: "Die Liste kann man nachträglich nur kürzen, nicht ergänzen. Für etwas Neues braucht es eine neue Anmeldung.",
+    text: "Die Liste kann man nach der offiziellen Anmeldung beim Amt nur kürzen, nicht ergänzen. Für etwas Neues braucht es eine neue Markenanmeldung.",
   },
   {
     emoji: "⏳",
@@ -259,7 +259,7 @@ function ProtectionInfo() {
   return (
     <details className="group rounded-2xl border-2 border-line bg-paper px-4 py-3">
       <summary className="cursor-pointer font-semibold select-none group-open:mb-3">
-        ℹ️ Was schützt eine Marke eigentlich?
+        ℹ️ Was schützt eine EU-Marke eigentlich?
       </summary>
       <ul className="space-y-3 text-sm">
         {PROTECTION_FACTS.map((f) => (
@@ -281,8 +281,8 @@ export function StepKern({ data, update }: { data: WizardData; update: Update })
     <div>
       <StepHeader
         emoji="🎯"
-        title="Was muss auf jeden Fall geschützt sein?"
-        subtitle="Das Herzstück deines Business – das, wofür deine Marke auf keinen Fall fehlen darf."
+        title="Welche Waren und Dienstleistungen sollen unbedingt erfasst werden?"
+        subtitle="Beschreibe uns den Kern deines Angebots oder konkrete Waren und Dienstleistungen, die du unbedingt geschützt wissen willst."
       />
 
       <ProtectionInfo />
