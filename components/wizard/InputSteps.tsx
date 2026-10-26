@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { BEREICH_GROUPS, BEREICHE, bereichById } from "@/lib/bereiche";
 import { COUNTRIES, FUTURE_PLANS, isEea } from "@/lib/options";
 import { filledMarkNames, primaryMarkName, type MarkType, type SuggestResult, type WizardData } from "@/lib/types";
+import { NameTips } from "./NameTips";
 import { Callout, Chip, ChoiceCard, Field, inputClass, StepHeader } from "./ui";
 
 type Update = (patch: Partial<WizardData>) => void;
@@ -134,11 +135,9 @@ export function StepName({ data, update }: { data: WizardData; update: Update })
 
   return (
     <div>
-      <StepHeader
-        emoji="✏️"
-        title="Wie soll deine Marke heißen?"
-        subtitle="Am besten funktionieren Namen, die nicht einfach beschreiben, was du anbietest – und es auch nicht anpreisen."
-      />
+      <StepHeader emoji="✏️" title="Wie soll deine Marke heißen?" />
+
+      <NameTips />
 
       <div className="grid items-start gap-3 sm:grid-cols-3">
         {MARK_TYPES.map((t) => (

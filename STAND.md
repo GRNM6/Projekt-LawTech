@@ -1,6 +1,6 @@
 # Projektstand
 
-_Zuletzt aktualisiert: 24.10.2026_
+_Zuletzt aktualisiert: 26.10.2026_
 
 ## Laufende Arbeit: Schritte 1–6 optimieren
 Branch `anmeldeprozess-optimieren` (noch nicht in `main` übernommen). Vorgehen: Schritt für Schritt
@@ -14,6 +14,9 @@ nach den Vorgaben von Geronimo, keine eigenmächtigen Umbauten.
     Später soll das System prüfen, welcher Name die besten Eintragungschancen hat (noch nicht gebaut)
   - Entschieden 24.10.: Nur der erste Name ist Pflicht. Überschrift bleibt auch bei „Bildmarke“ gleich.
   - 24.10.: Kategorien heißen jetzt Wortmarke, Wort-/Bildmarke, Bildmarke; darunter umgangssprachlich, was geschützt wird
+  - 26.10.: Unterzeile entfernt, stattdessen Infopunkt „Worauf soll ich achten?“ (`NameTips.tsx`) mit zwei
+    Ebenen: Aufklappfeld (zwei Kernpunkte + Tipp) und per „Mehr Hinweise zur Wahl deines Markennamens“
+    ein bildschirmfüllendes Infofeld mit allen 8 Hinweisen. Texte von Geronimo vorgegeben
 ### Beschlossen am 24.10.: neue Schrittfolge (8 statt 7 Schritte)
 1. **Marke** (fertig, s. o.)
 2. **Kern** (neu): „Was muss auf jeden Fall geschützt sein?“ (Freitext) + aufklappbares Infofeld
