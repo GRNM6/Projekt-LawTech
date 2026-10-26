@@ -58,10 +58,14 @@ vorerst weggelassen.
 - [x] Schritt „Schutz“ dreistufig (24.10.): `SpecClass.tier` = muss | kern | spaeter (ersetzt `core`).
       🎯 Muss-Schutz fest ausgewählt (nicht abwählbar, Hinweis auf Schritt „Kern“) · 💼 Kerngeschäft
       vorausgewählt · 🔮 Für später freiwillig, mit Hinweis auf die Benutzungspflicht
-- [ ] **Als Nächstes:** Schritte „Zukunft“ und „Anmelder“ nach Geronimos Vorgaben
+- [x] 26.10.: Schritt 1 Infopunkt „Worauf soll ich achten?“, Schritt 2 neue Texte + Bereichs-Vorschläge
+- [ ] **Als Nächstes (hier am 26.10. aufgehört):** Schritt 3 „Unterlagen“ nach Geronimos Vorgaben,
+      danach „Angebot“, „Zukunft“ (alte feste 8er-Chipliste passt nicht mehr zum Katalog, z. B.
+      „Ins Ausland expandieren“ ist für die Klassen irrelevant) und „Anmelder“
 
-### Noch nicht lokal getestet (Stand 24.10.)
-Kern, Unterlagen → Angebot mit KI-Vorschlägen und der dreistufige Schritt „Schutz“ wurden in der
+### Noch nicht lokal getestet (Stand 26.10.)
+Kern (inkl. Bereichs-Vorschläge vom 26.10.), Unterlagen → Angebot mit KI-Vorschlägen und der
+dreistufige Schritt „Schutz“ wurden in der
 Cloud nur per Demo-Test und TypeScript geprüft, kein vollständiger Build (npm-Verzeichnis dort nicht
 erreichbar). Vor dem Weitermachen einmal lokal `npm run build` laufen lassen und durchklicken.
 
