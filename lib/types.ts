@@ -11,13 +11,15 @@ export interface WizardData {
 
   // Schritt 2: Kern – was muss auf jeden Fall geschützt sein?
   coreProtection: string;
+  /** Bereiche aus dem Katalog, die der Nutzer im Kern-Schritt als unbedingt schützenswert gewählt hat */
+  coreBereiche: string[];
 
-  // Schritt 3: Was machst du?
+  // Schritt 3: Unterlagen
+  website: string;
+
+  // Schritt 4: Angebot – Bereiche aus dem Katalog plus eigene Worte
   offerings: string[];
   description: string;
-
-  // Schritt 3: Zeig uns mehr
-  website: string;
 
   // Schritt 4: Zukunft
   futurePlans: string[];
@@ -107,6 +109,7 @@ export const emptyWizardData: WizardData = {
   markType: "wort",
   logoDataUrl: null,
   coreProtection: "",
+  coreBereiche: [],
   offerings: [],
   description: "",
   website: "",

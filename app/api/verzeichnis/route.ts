@@ -69,7 +69,7 @@ Regeln für das Verzeichnis:
 - Verwende für "terms" möglichst exakt die deutschen Begriffe aus der harmonisierten Datenbank der EUIPO (TMclass), damit die Anmeldung zügig akzeptiert wird.
 - Keine bloßen Klassenüberschriften, sondern konkrete Begriffe.
 - Ordne jede Klasse genau einer Stufe ("tier") zu:
-  - "muss": Die Angabe "Muss auf jeden Fall geschützt sein" ist die wichtigste Information. Alle Klassen, die sie abdecken, sind "muss" und müssen vollständig abgedeckt sein.
+  - "muss": Die Angabe "Muss auf jeden Fall geschützt sein" und die dazu gewählten Muss-Bereiche sind die wichtigste Information. Alle Klassen, die sie abdecken, sind "muss" und müssen vollständig abgedeckt sein.
   - "kern": Was die Person heute anbietet oder konkret plant (Auswahl, Beschreibung, Website, Pitch-Dokument) und nicht schon "muss" ist.
   - "spaeter": Realistische, naheliegende Erweiterungen aus den Zukunftsplänen. Keine fernliegenden Klassen und keine Vorratsanmeldung – die Marke muss innerhalb von 5 Jahren nach Eintragung benutzt werden.
 - Bei Software in der Regel Klasse 9 (herunterladbar) und Klasse 42 (SaaS, Plattformen) prüfen.
@@ -124,6 +124,7 @@ function buildUserPrompt(data: WizardData, websiteText: string | null, hasPdf: b
     }`,
     `Markenform: ${markTypeLabel}`,
     `Muss auf jeden Fall geschützt sein (wichtigste Angabe): ${data.coreProtection || "-"}`,
+    `Muss-Bereiche (vom Nutzer dazu gewählt): ${(data.coreBereiche ?? []).map(bereichLabel).join(", ") || "-"}`,
     `Anmelder sitzt in: ${countryName(data.country)}`,
     `Angebot (Auswahl): ${data.offerings.map(bereichLabel).join(", ") || "-"}`,
     `Beschreibung in eigenen Worten: ${data.description || "-"}`,

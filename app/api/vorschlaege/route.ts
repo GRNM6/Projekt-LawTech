@@ -25,10 +25,10 @@ export async function POST(request: Request) {
   if (!apiKey) {
     // Kleine Pause, damit sich der Demo-Modus wie der echte Ablauf anfühlt
     await new Promise((r) => setTimeout(r, 1200));
-    const suggested = matchBereiche([data.coreProtection ?? "", websiteText ?? ""].join("\n")).slice(
-      0,
-      MAX_SUGGESTIONS,
-    );
+    const alreadyChosen = new Set(data.coreBereiche ?? []);
+    const suggested = matchBereiche([data.coreProtection ?? "", websiteText ?? ""].join("\n"))
+      .filter((id) => !alreadyChosen.has(id))
+      .slice(0, MAX_SUGGESTIONS);
     return Response.json({
       suggested,
       summary: suggested.length
@@ -100,6 +100,7 @@ function buildUserPrompt(data: WizardData, websiteText: string | null, hasPdf: b
   const lines = [
     `Muss auf jeden Fall geschützt sein (wichtigste Angabe): ${data.coreProtection || "-"}`,
     `Website: ${data.website || "-"}`,
+    `Bereits fest gewählt (nicht erneut vorschlagen): ${(data.coreBereiche ?? []).join(", ") || "-"}`,
   ];
   if (websiteText) {
     lines.push("", "<website_inhalt>", websiteText, "</website_inhalt>");

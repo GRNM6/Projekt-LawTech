@@ -30,6 +30,12 @@ export function Wizard() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Bereichs-Vorschläge für den Schritt „Kern“ (nur aus dem Kerntext, auf Knopfdruck)
+  const [kernSuggestion, setKernSuggestion] = useState<SuggestResult | null>(null);
+  const [kernSuggestedFor, setKernSuggestedFor] = useState<string | null>(null);
+  const [kernLoading, setKernLoading] = useState(false);
+  const [kernError, setKernError] = useState<string | null>(null);
+
   // Bereichs-Vorschläge für den Schritt „Angebot“
   const [suggestion, setSuggestion] = useState<SuggestResult | null>(null);
   const [suggestKey, setSuggestKey] = useState<string | null>(null);
@@ -68,6 +74,28 @@ export function Wizard() {
     }
   }
 
+  async function loadKernSuggestions() {
+    const text = data.coreProtection.trim();
+    setKernLoading(true);
+    setKernError(null);
+    try {
+      const body = new FormData();
+      // Bewusst nur der Kerntext – Website und Pitch-Deck kommen erst im nächsten Schritt
+      body.append("data", JSON.stringify({ ...emptyWizardData, coreProtection: text }));
+
+      const res = await fetch("/api/vorschlaege", { method: "POST", body });
+      const json = (await res.json()) as SuggestResult & { error?: string };
+      if (!res.ok) throw new Error(json.error ?? "Die Vorschläge konnten nicht erstellt werden.");
+
+      setKernSuggestion(json);
+      setKernSuggestedFor(text);
+    } catch (e) {
+      setKernError(e instanceof Error ? e.message : "Unbekannter Fehler.");
+    } finally {
+      setKernLoading(false);
+    }
+  }
+
   async function loadSuggestions() {
     const key = suggestInputKey(data, pitchFile);
     setSuggestLoading(true);
@@ -83,8 +111,13 @@ export function Wizard() {
 
       setSuggestion(json);
       setSuggestKey(key);
-      // Vorschläge vorauswählen, eigene Auswahl bleibt erhalten
-      setData((d) => ({ ...d, offerings: Array.from(new Set([...d.offerings, ...json.suggested])) }));
+      // Vorschläge vorauswählen, eigene Auswahl bleibt erhalten; Kern-Bereiche sind schon fest dabei
+      setData((d) => ({
+        ...d,
+        offerings: Array.from(new Set([...d.offerings, ...json.suggested])).filter(
+          (id) => !d.coreBereiche.includes(id),
+        ),
+      }));
     } catch (e) {
       setSuggestError(e instanceof Error ? e.message : "Unbekannter Fehler.");
     } finally {
@@ -115,7 +148,9 @@ export function Wizard() {
 
   const showNav = step.id !== "summary" && !(step.id === "spec" && (loading || error || !spec));
   const nextEnabled =
-    canContinue(step.id, data, selected.length > 0) && !(step.id === "what" && suggestLoading);
+    canContinue(step.id, data, selected.length > 0) &&
+    !(step.id === "what" && suggestLoading) &&
+    !(step.id === "kern" && kernLoading);
 
   return (
     <div className="flex flex-1 flex-col">
@@ -152,7 +187,17 @@ export function Wizard() {
       <main className="mx-auto w-full max-w-3xl flex-1 px-5 py-10">
         <div key={step.id} className="animate-step-in">
           {step.id === "name" && <StepName data={data} update={update} />}
-          {step.id === "kern" && <StepKern data={data} update={update} />}
+          {step.id === "kern" && (
+            <StepKern
+              data={data}
+              update={update}
+              suggestion={kernSuggestion}
+              stale={kernSuggestedFor !== null && kernSuggestedFor !== data.coreProtection.trim()}
+              loading={kernLoading}
+              error={kernError}
+              onSuggest={() => void loadKernSuggestions()}
+            />
+          )}
           {step.id === "what" && (
             <StepWhat
               data={data}

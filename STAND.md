@@ -44,6 +44,11 @@ vorerst weggelassen.
       wichtigste Angabe an die KI, erscheint in der Zusammenfassung; Demo: Schlagwortsuche im Katalog)
       26.10.: Texte nach Geronimos Vorgabe – Überschrift „Welche Waren und Dienstleistungen sollen
       unbedingt erfasst werden?“, Infofeld „Was schützt eine EU-Marke eigentlich?“
+      26.10.: Knopf „✨ Passende Bereiche anzeigen“ unter dem Textfeld – KI schlägt Bereiche aus dem
+      Katalog vor (nur aus dem Kerntext), Nutzer tippt an, was unbedingt geschützt werden soll
+      (`coreBereiche`, nicht vorausgewählt, optional). Gewählte Bereiche = Muss-Schutz, erscheinen in
+      „Angebot“ als „🎯 Aus deinem Kern – fest dabei“ und werden dort nicht erneut vorgeschlagen.
+      Bei geändertem Text: „🔄 Vorschläge aktualisieren“
 - [x] Schrittfolge umgestellt (24.10.): Marke → Kern → Unterlagen → Angebot → Zukunft → Anmelder →
       Schutz → Fertig
 - [x] KI-Vorschläge für Chips (24.10.): neue Route `app/api/vorschlaege`, aufgerufen beim Verlassen von

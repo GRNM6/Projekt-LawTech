@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
+import { bereichLabel } from "@/lib/bereiche";
 import { BRAND } from "@/lib/brand";
 import { euipoFeeLines, euipoFeeTotal, formatEuro } from "@/lib/fees";
 import { countryName, isEea } from "@/lib/options";
@@ -66,6 +67,9 @@ export function StepSummary({
 
         <SummaryCard title="Muss auf jeden Fall geschützt sein" onEdit={() => onEdit("kern")}>
           <p className="whitespace-pre-line">{data.coreProtection}</p>
+          {data.coreBereiche.length > 0 && (
+            <p className="mt-2 text-sm text-muted">{data.coreBereiche.map(bereichLabel).join(" · ")}</p>
+          )}
         </SummaryCard>
 
         <SummaryCard title="Inhaber" onEdit={() => onEdit("who")}>

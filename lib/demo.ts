@@ -238,6 +238,7 @@ export function buildDemoSpec(data: WizardData, sourcesUsed: string[]): SpecResu
     else addTemplates(templatesFromCatalog(bereichId), tier);
   };
 
+  (data.coreBereiche ?? []).forEach((id) => addBereich(id, "muss"));
   matchBereiche(data.coreProtection ?? "").forEach((id) => addBereich(id, "muss"));
   data.offerings.forEach((id) => addBereich(id, "kern"));
   data.futurePlans.forEach((id) => {

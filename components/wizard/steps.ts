@@ -27,7 +27,9 @@ export function canContinue(step: StepId, data: WizardData, hasSelection: boolea
       // Ein kurzer Satz reicht – Hauptsache, die wichtigste Angabe ist da
       return data.coreProtection.trim().length >= 5;
     case "what":
-      return data.offerings.length > 0 || data.description.trim().length >= 20;
+      return (
+        data.coreBereiche.length > 0 || data.offerings.length > 0 || data.description.trim().length >= 20
+      );
     case "more":
     case "future":
       return true;
@@ -62,6 +64,7 @@ export function specInputKey(data: WizardData, pitch: File | null): string {
     data.markNames,
     data.markType,
     data.coreProtection,
+    data.coreBereiche,
     data.offerings,
     data.description,
     data.website,

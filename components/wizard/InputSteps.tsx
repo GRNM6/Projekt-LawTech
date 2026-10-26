@@ -276,7 +276,36 @@ function ProtectionInfo() {
   );
 }
 
-export function StepKern({ data, update }: { data: WizardData; update: Update }) {
+export function StepKern({
+  data,
+  update,
+  suggestion,
+  stale,
+  loading,
+  error,
+  onSuggest,
+}: {
+  data: WizardData;
+  update: Update;
+  suggestion: SuggestResult | null;
+  /** Text wurde nach den letzten Vorschlägen geändert */
+  stale: boolean;
+  loading: boolean;
+  error: string | null;
+  onSuggest: () => void;
+}) {
+  const canSuggest = data.coreProtection.trim().length >= 5 && !loading;
+  const suggested = suggestion?.suggested ?? [];
+  // Gewählte Bereiche, die nicht (mehr) unter den Vorschlägen sind, bleiben sichtbar
+  const ownPicks = data.coreBereiche.filter((id) => !suggested.includes(id));
+  const shown = new Set([...suggested, ...ownPicks]);
+  const toggleCore = (id: string) =>
+    update({
+      coreBereiche: toggle(data.coreBereiche, id),
+      // Ein Bereich ist entweder Kern oder normales Angebot, nicht beides
+      offerings: data.offerings.filter((x) => x !== id),
+    });
+
   return (
     <div>
       <StepHeader
@@ -301,24 +330,125 @@ export function StepKern({ data, update }: { data: WizardData; update: Update })
             autoFocus
           />
         </Field>
+
+        {(!suggestion || stale) && (
+          <button
+            type="button"
+            onClick={onSuggest}
+            disabled={!canSuggest}
+            className="mt-3 rounded-full border-2 border-violet bg-violet-soft px-5 py-2.5 font-semibold text-ink transition enabled:hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            {stale ? "🔄 Vorschläge aktualisieren" : "✨ Passende Bereiche anzeigen"}
+          </button>
+        )}
       </div>
+
+      {loading && (
+        <div className="mt-6 flex items-center gap-4 rounded-2xl border-2 border-dashed border-line bg-paper p-5">
+          <span className="animate-float text-4xl">🤖</span>
+          <span className="font-semibold">Ich suche passende Bereiche …</span>
+        </div>
+      )}
+
+      {error && !loading && (
+        <div className="mt-6">
+          <Callout tone="coral">
+            {error}{" "}
+            <button type="button" onClick={onSuggest} className="font-semibold underline">
+              Nochmal versuchen
+            </button>
+          </Callout>
+        </div>
+      )}
+
+      {suggestion && !loading && (
+        <section className="mt-8">
+          <h2 className="mb-1 font-display text-xl font-bold">✨ Passt zu deinem Kern</h2>
+          <p className="mb-3 text-sm text-muted">
+            Tipp an, was unbedingt geschützt werden soll. Das ist später fest dabei.
+            {suggestion.demo && (
+              <span className="ml-2 rounded-full bg-coral px-2 py-0.5 text-xs font-semibold text-white">Demo-Modus</span>
+            )}
+          </p>
+          {shown.size > 0 ? (
+            <div className="flex flex-wrap gap-2.5">
+              {[...suggested, ...ownPicks].map((id) => (
+                <BereichChip key={id} id={id} selected={data.coreBereiche.includes(id)} onToggle={toggleCore} />
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm">{suggestion.summary}</p>
+          )}
+
+          <AllBereiche
+            className="mt-6"
+            title="Etwas fehlt? Alle Bereiche"
+            exclude={shown}
+            isSelected={(id) => data.coreBereiche.includes(id)}
+            onToggle={toggleCore}
+          />
+        </section>
+      )}
     </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Bereichs-Chips (Kern und Angebot)                                    */
+/* ------------------------------------------------------------------ */
+
+function BereichChip({ id, selected, onToggle }: { id: string; selected: boolean; onToggle: (id: string) => void }) {
+  const b = bereichById(id);
+  if (!b) return null;
+  return (
+    <Chip selected={selected} onClick={() => onToggle(id)}>
+      {b.emoji} {b.label}
+    </Chip>
+  );
+}
+
+/** Aufklappbarer Gesamtkatalog, nach Gruppen sortiert */
+function AllBereiche({
+  title,
+  exclude,
+  isSelected,
+  onToggle,
+  defaultOpen = false,
+  className = "",
+}: {
+  title: string;
+  exclude: Set<string>;
+  isSelected: (id: string) => boolean;
+  onToggle: (id: string) => void;
+  defaultOpen?: boolean;
+  className?: string;
+}) {
+  return (
+    <details className={`group rounded-2xl border-2 border-line bg-paper px-4 py-3 ${className}`} open={defaultOpen}>
+      <summary className="cursor-pointer font-semibold select-none group-open:mb-4">➕ {title}</summary>
+      <div className="space-y-5">
+        {BEREICH_GROUPS.map((g) => {
+          const items = BEREICHE.filter((b) => b.group === g.id && !exclude.has(b.id));
+          if (items.length === 0) return null;
+          return (
+            <div key={g.id}>
+              <h3 className="mb-2 text-sm font-semibold text-muted">{g.label}</h3>
+              <div className="flex flex-wrap gap-2">
+                {items.map((b) => (
+                  <BereichChip key={b.id} id={b.id} selected={isSelected(b.id)} onToggle={onToggle} />
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </details>
   );
 }
 
 /* ------------------------------------------------------------------ */
 /* 4 · Angebot (kommt nach „Unterlagen“, damit die KI vorschlagen kann)  */
 /* ------------------------------------------------------------------ */
-
-function BereichChip({ id, data, update }: { id: string; data: WizardData; update: Update }) {
-  const b = bereichById(id);
-  if (!b) return null;
-  return (
-    <Chip selected={data.offerings.includes(id)} onClick={() => update({ offerings: toggle(data.offerings, id) })}>
-      {b.emoji} {b.label}
-    </Chip>
-  );
-}
 
 export function StepWhat({
   data,
@@ -335,11 +465,13 @@ export function StepWhat({
   error: string | null;
   onRetry: () => void;
 }) {
-  const suggested = loading || error ? [] : (suggestion?.suggested ?? []);
+  const core = new Set(data.coreBereiche);
+  const suggested = loading || error ? [] : (suggestion?.suggested ?? []).filter((id) => !core.has(id));
   const hasSuggestions = suggested.length > 0;
   // Selbst gewählte Bereiche, die nicht vorgeschlagen wurden, bleiben oben sichtbar
-  const ownPicks = data.offerings.filter((id) => !suggested.includes(id));
-  const shown = new Set([...suggested, ...ownPicks]);
+  const ownPicks = data.offerings.filter((id) => !suggested.includes(id) && !core.has(id));
+  const shown = new Set([...data.coreBereiche, ...suggested, ...ownPicks]);
+  const toggleOffering = (id: string) => update({ offerings: toggle(data.offerings, id) });
 
   return (
     <div>
@@ -354,6 +486,26 @@ export function StepWhat({
             : "Tipp einfach alles an, was passt. Mehrfachauswahl ausdrücklich erwünscht."
         }
       />
+
+      {data.coreBereiche.length > 0 && (
+        <section className="mb-8">
+          <h2 className="mb-1 font-display text-xl font-bold">🎯 Aus deinem Kern</h2>
+          <p className="mb-3 text-sm text-muted">Fest dabei – ändern kannst du das im Schritt „Kern“.</p>
+          <div className="flex flex-wrap gap-2.5">
+            {data.coreBereiche.map((id) => {
+              const b = bereichById(id);
+              return b ? (
+                <span
+                  key={id}
+                  className="rounded-full border-2 border-violet bg-violet-soft px-4 py-2 text-sm font-medium"
+                >
+                  🔒 {b.emoji} {b.label}
+                </span>
+              ) : null;
+            })}
+          </div>
+        </section>
+      )}
 
       {loading && (
         <div className="flex items-center gap-4 rounded-2xl border-2 border-dashed border-line bg-paper p-5">
@@ -395,34 +547,21 @@ export function StepWhat({
           {!hasSuggestions && <h2 className="mb-3 font-display text-xl font-bold">Deine Auswahl</h2>}
           <div className="flex flex-wrap gap-2.5">
             {[...suggested, ...ownPicks].map((id) => (
-              <BereichChip key={id} id={id} data={data} update={update} />
+              <BereichChip key={id} id={id} selected={data.offerings.includes(id)} onToggle={toggleOffering} />
             ))}
           </div>
         </section>
       )}
 
       {!loading && (
-        <details className="group mt-8 rounded-2xl border-2 border-line bg-paper px-4 py-3" open={!hasSuggestions}>
-          <summary className="cursor-pointer font-semibold select-none group-open:mb-4">
-            ➕ {hasSuggestions ? "Weitere Bereiche" : "Alle Bereiche"}
-          </summary>
-          <div className="space-y-5">
-            {BEREICH_GROUPS.map((g) => {
-              const items = BEREICHE.filter((b) => b.group === g.id && !shown.has(b.id));
-              if (items.length === 0) return null;
-              return (
-                <div key={g.id}>
-                  <h3 className="mb-2 text-sm font-semibold text-muted">{g.label}</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {items.map((b) => (
-                      <BereichChip key={b.id} id={b.id} data={data} update={update} />
-                    ))}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </details>
+        <AllBereiche
+          className="mt-8"
+          title={hasSuggestions ? "Weitere Bereiche" : "Alle Bereiche"}
+          exclude={shown}
+          isSelected={(id) => data.offerings.includes(id)}
+          onToggle={toggleOffering}
+          defaultOpen={!hasSuggestions}
+        />
       )}
 
       <div className="mt-8">
