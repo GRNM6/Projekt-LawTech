@@ -54,6 +54,15 @@ vorerst weggelassen.
 - Route `app/api/verzeichnis`: `SpecClass.tier` = muss | kern | spaeter
 - Gemeinsame KI-Bausteine in `lib/quellen.ts`
 
+### Entscheidungen / offene Punkte (09.11.)
+- **Kein API-Schlüssel vorerst** – es sollen noch keine Kosten entstehen. Folge: Pitch-PDF wird im
+  Demo-Modus nicht gelesen (Stichwortsuche nur in Kerntext und Website).
+- Bekannter Fehler: Im Demo-Modus steht trotzdem „✓ Pitch-Dokument ausgewertet“ (Schutzpaket und
+  Schutz) – irreführend, sollte behoben werden.
+- Freitext „Sonst noch etwas?“ im Schutzpaket wirkt bisher nur unsichtbar im Verzeichnis (mit
+  API-Schlüssel), nicht auf die Vorschläge; im Demo-Modus gar nicht. Vorschlag: per „✨ Auswerten“
+  in die Vorschläge einfließen lassen (markiert „· aus deinem Text“). Noch nicht entschieden.
+
 ### Als Nächstes
 - [ ] Neuen Ablauf lokal testen (`npm run build`, durchklicken) und Feedback von Geronimo
 - [ ] Danach: Schritte „Schutz“ und „Anmelder“ nach Geronimos Vorgaben
