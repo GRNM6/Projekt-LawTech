@@ -3,11 +3,9 @@ import type { WizardData } from "@/lib/types";
 export const STEPS = [
   { id: "name", emoji: "✏️", label: "Marke" },
   { id: "kern", emoji: "🎯", label: "Kern" },
-  { id: "more", emoji: "🔍", label: "Unterlagen" },
-  { id: "what", emoji: "💬", label: "Angebot" },
-  { id: "future", emoji: "🔮", label: "Zukunft" },
-  { id: "who", emoji: "🙋", label: "Anmelder" },
+  { id: "paket", emoji: "🧩", label: "Schutzpaket" },
   { id: "spec", emoji: "🛡️", label: "Schutz" },
+  { id: "who", emoji: "🙋", label: "Anmelder" },
   { id: "summary", emoji: "🎉", label: "Fertig" },
 ] as const;
 
@@ -26,13 +24,11 @@ export function canContinue(step: StepId, data: WizardData, hasSelection: boolea
     case "kern":
       // Ein kurzer Satz reicht – Hauptsache, die wichtigste Angabe ist da
       return data.coreProtection.trim().length >= 5;
-    case "what":
-      return (
-        data.coreBereiche.length > 0 || data.offerings.length > 0 || data.description.trim().length >= 20
-      );
-    case "more":
-    case "future":
+    case "paket":
+      // Alles freiwillig – der Kern allein reicht für ein Verzeichnis
       return true;
+    case "spec":
+      return hasSelection;
     case "who": {
       const nameOk =
         data.applicantKind === "person"
@@ -46,16 +42,19 @@ export function canContinue(step: StepId, data: WizardData, hasSelection: boolea
         EMAIL_RE.test(data.email.trim())
       );
     }
-    case "spec":
-      return hasSelection;
     case "summary":
       return true;
   }
 }
 
-/** Fingerabdruck der Angaben, aus denen die Bereichs-Vorschläge entstehen */
+/** Fingerabdruck der Angaben, aus denen die Vorschläge im Schutzpaket entstehen */
 export function suggestInputKey(data: WizardData, pitch: File | null): string {
-  return JSON.stringify([data.coreProtection, data.website, pitch ? `${pitch.name}:${pitch.size}` : null]);
+  return JSON.stringify([
+    data.coreProtection.trim(),
+    data.coreBereiche,
+    data.website.trim(),
+    pitch ? `${pitch.name}:${pitch.size}` : null,
+  ]);
 }
 
 /** Fingerabdruck der Angaben, die das Verzeichnis beeinflussen */
@@ -66,11 +65,9 @@ export function specInputKey(data: WizardData, pitch: File | null): string {
     data.coreProtection,
     data.coreBereiche,
     data.offerings,
+    data.futureBereiche,
     data.description,
     data.website,
-    data.futurePlans,
-    data.futureNote,
-    data.country,
     pitch ? `${pitch.name}:${pitch.size}` : null,
   ]);
 }

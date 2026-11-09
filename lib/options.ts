@@ -1,21 +1,3 @@
-export interface ChipOption {
-  id: string;
-  emoji: string;
-  label: string;
-}
-
-/** Zukunftspläne – damit die Marke mitwachsen kann. */
-export const FUTURE_PLANS: ChipOption[] = [
-  { id: "merch", emoji: "🧢", label: "Eigenes Merch" },
-  { id: "app", emoji: "📱", label: "Eine eigene App" },
-  { id: "shop", emoji: "🛒", label: "Einen Online-Shop" },
-  { id: "courses", emoji: "🎓", label: "Kurse oder Workshops" },
-  { id: "events", emoji: "🎉", label: "Eigene Events" },
-  { id: "media", emoji: "🎙️", label: "Podcast oder YouTube" },
-  { id: "products", emoji: "📦", label: "Eigene Produkte" },
-  { id: "international", emoji: "🌍", label: "Ins Ausland expandieren" },
-];
-
 export interface Country {
   code: string;
   name: string;
@@ -50,9 +32,4 @@ export function countryName(code: string): string {
 
 export function isEea(code: string): boolean {
   return COUNTRIES.find((c) => c.code === code)?.eea ?? false;
-}
-
-export function optionLabel(options: ChipOption[], id: string): string {
-  const o = options.find((x) => x.id === id);
-  return o ? `${o.emoji} ${o.label}` : id;
 }

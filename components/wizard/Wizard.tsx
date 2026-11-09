@@ -4,19 +4,17 @@ import Link from "next/link";
 import { useState } from "react";
 import { BRAND } from "@/lib/brand";
 import { emptyWizardData, type SpecResult, type SuggestResult, type WizardData } from "@/lib/types";
-import { StepFuture, StepKern, StepMore, StepName, StepWhat, StepWho } from "./InputSteps";
+import { StepKern, StepName, StepPaket, StepWho } from "./InputSteps";
 import { StepSpec } from "./StepSpec";
 import { StepSummary } from "./StepSummary";
 import { canContinue, specInputKey, STEPS, suggestInputKey, type StepId } from "./steps";
 
 const NEXT_LABELS: Partial<Record<StepId, string>> = {
   name: "Klingt gut, weiter →",
-  kern: "Weiter →",
-  what: "Weiter →",
-  more: "Weiter →",
-  future: "Weiter →",
-  who: "Schutz erstellen ✨",
-  spec: "Passt so →",
+  kern: "Weiter zum Schutzpaket →",
+  paket: "Schutz erstellen ✨",
+  spec: "Passt so, weiter →",
+  who: "Zur Übersicht →",
 };
 
 export function Wizard() {
@@ -36,7 +34,7 @@ export function Wizard() {
   const [kernLoading, setKernLoading] = useState(false);
   const [kernError, setKernError] = useState<string | null>(null);
 
-  // Bereichs-Vorschläge für den Schritt „Angebot“
+  // Bereichs-Vorschläge für den Schritt „Dein Schutzpaket“ (heute / später)
   const [suggestion, setSuggestion] = useState<SuggestResult | null>(null);
   const [suggestKey, setSuggestKey] = useState<string | null>(null);
   const [suggestLoading, setSuggestLoading] = useState(false);
@@ -82,6 +80,7 @@ export function Wizard() {
       const body = new FormData();
       // Bewusst nur der Kerntext – Website und Pitch-Deck kommen erst im nächsten Schritt
       body.append("data", JSON.stringify({ ...emptyWizardData, coreProtection: text }));
+      body.append("mode", "kern");
 
       const res = await fetch("/api/vorschlaege", { method: "POST", body });
       const json = (await res.json()) as SuggestResult & { error?: string };
@@ -96,28 +95,23 @@ export function Wizard() {
     }
   }
 
-  async function loadSuggestions() {
+  async function loadPaketSuggestions() {
     const key = suggestInputKey(data, pitchFile);
     setSuggestLoading(true);
     setSuggestError(null);
     try {
       const body = new FormData();
       body.append("data", JSON.stringify({ ...data, logoDataUrl: null }));
+      body.append("mode", "paket");
       if (pitchFile) body.append("pitch", pitchFile);
 
       const res = await fetch("/api/vorschlaege", { method: "POST", body });
       const json = (await res.json()) as SuggestResult & { error?: string };
       if (!res.ok) throw new Error(json.error ?? "Die Vorschläge konnten nicht erstellt werden.");
 
+      // Nichts vorauswählen – der Nutzer tippt selbst an, was stimmt
       setSuggestion(json);
       setSuggestKey(key);
-      // Vorschläge vorauswählen, eigene Auswahl bleibt erhalten; Kern-Bereiche sind schon fest dabei
-      setData((d) => ({
-        ...d,
-        offerings: Array.from(new Set([...d.offerings, ...json.suggested])).filter(
-          (id) => !d.coreBereiche.includes(id),
-        ),
-      }));
     } catch (e) {
       setSuggestError(e instanceof Error ? e.message : "Unbekannter Fehler.");
     } finally {
@@ -127,10 +121,11 @@ export function Wizard() {
 
   function next() {
     if (!canContinue(step.id, data, selected.length > 0)) return;
-    if (step.id === "more" && suggestInputKey(data, pitchFile) !== suggestKey) {
-      void loadSuggestions();
+    // Beim Wechsel ins Schutzpaket gleich Vorschläge rund um den Kern holen
+    if (step.id === "kern" && suggestInputKey(data, pitchFile) !== suggestKey) {
+      void loadPaketSuggestions();
     }
-    if (step.id === "who" && specInputKey(data, pitchFile) !== specKey) {
+    if (step.id === "paket" && specInputKey(data, pitchFile) !== specKey) {
       void generateSpec();
     }
     goTo(STEPS[Math.min(stepIndex + 1, STEPS.length - 1)].id);
@@ -149,7 +144,7 @@ export function Wizard() {
   const showNav = step.id !== "summary" && !(step.id === "spec" && (loading || error || !spec));
   const nextEnabled =
     canContinue(step.id, data, selected.length > 0) &&
-    !(step.id === "what" && suggestLoading) &&
+    !(step.id === "paket" && suggestLoading) &&
     !(step.id === "kern" && kernLoading);
 
   return (
@@ -198,20 +193,19 @@ export function Wizard() {
               onSuggest={() => void loadKernSuggestions()}
             />
           )}
-          {step.id === "what" && (
-            <StepWhat
+          {step.id === "paket" && (
+            <StepPaket
               data={data}
               update={update}
+              pitchFile={pitchFile}
+              setPitchFile={setPitchFile}
               suggestion={suggestion}
+              sourcesChanged={suggestKey !== null && suggestInputKey(data, pitchFile) !== suggestKey}
               loading={suggestLoading}
               error={suggestError}
-              onRetry={() => void loadSuggestions()}
+              onSuggest={() => void loadPaketSuggestions()}
             />
           )}
-          {step.id === "more" && (
-            <StepMore data={data} update={update} pitchFile={pitchFile} setPitchFile={setPitchFile} />
-          )}
-          {step.id === "future" && <StepFuture data={data} update={update} />}
           {step.id === "who" && <StepWho data={data} update={update} />}
           {step.id === "spec" && (
             <StepSpec
@@ -248,9 +242,7 @@ export function Wizard() {
                 disabled={!nextEnabled}
                 className="rounded-full bg-violet px-7 py-3 font-semibold text-white shadow-[0_5px_0_0_#4a30c4] transition enabled:hover:-translate-y-0.5 enabled:active:translate-y-1 enabled:active:shadow-none disabled:cursor-not-allowed disabled:opacity-40"
               >
-                {step.id === "more" && !data.website.trim() && !pitchFile
-                  ? "Überspringen →"
-                  : NEXT_LABELS[step.id] ?? "Weiter →"}
+                {NEXT_LABELS[step.id] ?? "Weiter →"}
               </button>
             )}
           </div>

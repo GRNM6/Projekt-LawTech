@@ -14,18 +14,16 @@ export interface WizardData {
   /** Bereiche aus dem Katalog, die der Nutzer im Kern-Schritt als unbedingt schützenswert gewählt hat */
   coreBereiche: string[];
 
-  // Schritt 3: Unterlagen
+  // Schritt 3: Dein Schutzpaket – alles rund um den Kern
+  /** Bereiche, die heute schon angeboten werden */
+  offerings: string[];
+  /** Bereiche, die in den nächsten Jahren dazukommen sollen */
+  futureBereiche: string[];
+  /** Freiwillig: alles, was nicht in den Katalog passt */
+  description: string;
   website: string;
 
-  // Schritt 4: Angebot – Bereiche aus dem Katalog plus eigene Worte
-  offerings: string[];
-  description: string;
-
-  // Schritt 4: Zukunft
-  futurePlans: string[];
-  futureNote: string;
-
-  // Schritt 5: Anmelder
+  // Schritt 5: Anmelder (kommt nach „Schutz“)
   applicantKind: ApplicantKind;
   firstName: string;
   lastName: string;
@@ -51,10 +49,21 @@ export function primaryMarkName(data: Pick<WizardData, "markNames">): string {
   return filledMarkNames(data)[0] ?? "";
 }
 
+/**
+ * Wofür Vorschläge gebraucht werden:
+ * kern  = Bereiche, die den Kerntext abdecken (Schritt „Kern“)
+ * paket = Bereiche rund um den Kern, heute und später (Schritt „Dein Schutzpaket“)
+ */
+export type SuggestMode = "kern" | "paket";
+
 /** Antwort der Vorschlags-Route: passende Bereiche aus dem Katalog (`lib/bereiche.ts`) */
 export interface SuggestResult {
-  /** IDs der vorgeschlagenen Bereiche, wichtigste zuerst */
+  /** kern: Bereiche zum Kerntext · paket: Bereiche, die vermutlich heute schon dazugehören */
   suggested: string[];
+  /** Nur paket: Bereiche, die in den nächsten Jahren dazukommen könnten */
+  later: string[];
+  /** Bereiche, die sich klar aus Website oder Pitch-Dokument ergeben */
+  fromSources: string[];
   /** Ein Satz, was die KI aus den Angaben herausgelesen hat */
   summary: string;
   sourcesUsed: string[];
@@ -113,8 +122,7 @@ export const emptyWizardData: WizardData = {
   offerings: [],
   description: "",
   website: "",
-  futurePlans: [],
-  futureNote: "",
+  futureBereiche: [],
   applicantKind: "person",
   firstName: "",
   lastName: "",

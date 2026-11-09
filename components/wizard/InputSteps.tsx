@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import { BEREICH_GROUPS, BEREICHE, bereichById } from "@/lib/bereiche";
-import { COUNTRIES, FUTURE_PLANS, isEea } from "@/lib/options";
+import { COUNTRIES, isEea } from "@/lib/options";
 import { filledMarkNames, primaryMarkName, type MarkType, type SuggestResult, type WizardData } from "@/lib/types";
 import { NameTips } from "./NameTips";
 import { Callout, Chip, ChoiceCard, Field, inputClass, StepHeader } from "./ui";
@@ -302,8 +302,9 @@ export function StepKern({
   const toggleCore = (id: string) =>
     update({
       coreBereiche: toggle(data.coreBereiche, id),
-      // Ein Bereich ist entweder Kern oder normales Angebot, nicht beides
+      // Ein Bereich ist entweder Kern oder Teil des übrigen Pakets, nicht beides
       offerings: data.offerings.filter((x) => x !== id),
+      futureBereiche: data.futureBereiche.filter((x) => x !== id),
     });
 
   return (
@@ -397,12 +398,24 @@ export function StepKern({
 /* Bereichs-Chips (Kern und Angebot)                                    */
 /* ------------------------------------------------------------------ */
 
-function BereichChip({ id, selected, onToggle }: { id: string; selected: boolean; onToggle: (id: string) => void }) {
+function BereichChip({
+  id,
+  selected,
+  onToggle,
+  note,
+}: {
+  id: string;
+  selected: boolean;
+  onToggle: (id: string) => void;
+  /** Kleiner Zusatz, z. B. „aus deinen Unterlagen“ */
+  note?: string;
+}) {
   const b = bereichById(id);
   if (!b) return null;
   return (
     <Chip selected={selected} onClick={() => onToggle(id)}>
       {b.emoji} {b.label}
+      {note && <span className="ml-1.5 text-xs opacity-75">· {note}</span>}
     </Chip>
   );
 }
@@ -447,155 +460,227 @@ function AllBereiche({
 }
 
 /* ------------------------------------------------------------------ */
-/* 4 · Angebot (kommt nach „Unterlagen“, damit die KI vorschlagen kann)  */
+/* 3 · Dein Schutzpaket – alles rund um den Kern, heute und später      */
 /* ------------------------------------------------------------------ */
 
-export function StepWhat({
-  data,
-  update,
-  suggestion,
-  loading,
-  error,
-  onRetry,
-}: {
-  data: WizardData;
-  update: Update;
-  suggestion: SuggestResult | null;
-  loading: boolean;
-  error: string | null;
-  onRetry: () => void;
-}) {
-  const core = new Set(data.coreBereiche);
-  const suggested = loading || error ? [] : (suggestion?.suggested ?? []).filter((id) => !core.has(id));
-  const hasSuggestions = suggested.length > 0;
-  // Selbst gewählte Bereiche, die nicht vorgeschlagen wurden, bleiben oben sichtbar
-  const ownPicks = data.offerings.filter((id) => !suggested.includes(id) && !core.has(id));
-  const shown = new Set([...data.coreBereiche, ...suggested, ...ownPicks]);
-  const toggleOffering = (id: string) => update({ offerings: toggle(data.offerings, id) });
-
-  return (
-    <div>
-      <StepHeader
-        emoji="💬"
-        title={`Was steckt hinter ${
-          data.markType !== "bild" && primaryMarkName(data) ? `„${primaryMarkName(data)}“` : "deiner Marke"
-        }?`}
-        subtitle={
-          hasSuggestions
-            ? "Das haben wir für dich vorbereitet. Passt etwas nicht? Einfach antippen zum An- und Abwählen."
-            : "Tipp einfach alles an, was passt. Mehrfachauswahl ausdrücklich erwünscht."
-        }
-      />
-
-      {data.coreBereiche.length > 0 && (
-        <section className="mb-8">
-          <h2 className="mb-1 font-display text-xl font-bold">🎯 Aus deinem Kern</h2>
-          <p className="mb-3 text-sm text-muted">Fest dabei – ändern kannst du das im Schritt „Kern“.</p>
-          <div className="flex flex-wrap gap-2.5">
-            {data.coreBereiche.map((id) => {
-              const b = bereichById(id);
-              return b ? (
-                <span
-                  key={id}
-                  className="rounded-full border-2 border-violet bg-violet-soft px-4 py-2 text-sm font-medium"
-                >
-                  🔒 {b.emoji} {b.label}
-                </span>
-              ) : null;
-            })}
-          </div>
-        </section>
-      )}
-
-      {loading && (
-        <div className="flex items-center gap-4 rounded-2xl border-2 border-dashed border-line bg-paper p-5">
-          <span className="animate-float text-4xl">🤖</span>
-          <span>
-            <span className="block font-semibold">Ich schaue mir deine Angaben an …</span>
-            <span className="text-sm text-muted">Gleich siehst du, welche Bereiche zu dir passen.</span>
-          </span>
-        </div>
-      )}
-
-      {error && !loading && (
-        <Callout tone="coral">
-          {error}{" "}
-          <button type="button" onClick={onRetry} className="font-semibold underline">
-            Nochmal versuchen
-          </button>
-        </Callout>
-      )}
-
-      {(hasSuggestions || ownPicks.length > 0) && (
-        <section>
-          {hasSuggestions && (
-            <>
-              <h2 className="mb-1 font-display text-xl font-bold">✨ Passt zu dir</h2>
-              {suggestion?.summary && <p className="mb-2 text-sm text-muted">{suggestion.summary}</p>}
-              <div className="mb-3 flex flex-wrap gap-2 text-xs">
-                {suggestion?.demo && (
-                  <span className="rounded-full bg-coral px-3 py-1 font-semibold text-white">Demo-Modus</span>
-                )}
-                {suggestion?.sourcesUsed.map((s) => (
-                  <span key={s} className="rounded-full bg-mint-soft px-3 py-1">
-                    ✓ {s} ausgewertet
-                  </span>
-                ))}
-              </div>
-            </>
-          )}
-          {!hasSuggestions && <h2 className="mb-3 font-display text-xl font-bold">Deine Auswahl</h2>}
-          <div className="flex flex-wrap gap-2.5">
-            {[...suggested, ...ownPicks].map((id) => (
-              <BereichChip key={id} id={id} selected={data.offerings.includes(id)} onToggle={toggleOffering} />
-            ))}
-          </div>
-        </section>
-      )}
-
-      {!loading && (
-        <AllBereiche
-          className="mt-8"
-          title={hasSuggestions ? "Weitere Bereiche" : "Alle Bereiche"}
-          exclude={shown}
-          isSelected={(id) => data.offerings.includes(id)}
-          onToggle={toggleOffering}
-          defaultOpen={!hasSuggestions}
-        />
-      )}
-
-      <div className="mt-8">
-        <Field
-          label="Erklär's uns, als wären wir deine Oma 👵"
-          hint="Nicht dabei, was du machst? Beschreib es einfach hier – die KI findet die passende Klasse."
-        >
-          <textarea
-            className={`${inputClass} min-h-32 resize-y`}
-            value={data.description}
-            onChange={(e) => update({ description: e.target.value })}
-            placeholder="z. B. Wir bauen eine App, mit der Hundebesitzer in ihrer Nähe Gassi-Partner finden. Später wollen wir auch Leinen und Halsbänder verkaufen."
-            maxLength={2000}
-          />
-        </Field>
-      </div>
-    </div>
-  );
-}
-
-/* ------------------------------------------------------------------ */
-/* 3 · Unterlagen (Website & Pitch-Deck)                                */
-/* ------------------------------------------------------------------ */
-
-export function StepMore({
+export function StepPaket({
   data,
   update,
   pitchFile,
   setPitchFile,
+  suggestion,
+  sourcesChanged,
+  loading,
+  error,
+  onSuggest,
 }: {
   data: WizardData;
   update: Update;
   pitchFile: File | null;
   setPitchFile: (f: File | null) => void;
+  suggestion: SuggestResult | null;
+  /** Kern, Website oder PDF wurden nach den letzten Vorschlägen geändert */
+  sourcesChanged: boolean;
+  loading: boolean;
+  error: string | null;
+  onSuggest: () => void;
+}) {
+  const [addTo, setAddTo] = useState<"heute" | "spaeter">("heute");
+
+  const core = new Set(data.coreBereiche);
+  const heute = new Set(data.offerings);
+  const spaeter = new Set(data.futureBereiche);
+  const fromSources = new Set(suggestion?.fromSources ?? []);
+  const sugHeute = (suggestion?.suggested ?? []).filter((id) => !core.has(id));
+  const sugSpaeter = (suggestion?.later ?? []).filter((id) => !core.has(id) && !sugHeute.includes(id));
+
+  // Ein Chip steht in der Spalte, in die der Nutzer ihn gewählt hat – sonst dort, wo er vorgeschlagen wurde
+  const unique = (ids: string[]) => Array.from(new Set(ids)).filter((id) => !core.has(id));
+  const colHeute = unique([...sugHeute.filter((id) => !spaeter.has(id)), ...sugSpaeter.filter((id) => heute.has(id)), ...data.offerings]);
+  const colSpaeter = unique([...sugSpaeter.filter((id) => !heute.has(id)), ...sugHeute.filter((id) => spaeter.has(id)), ...data.futureBereiche]);
+  const shown = new Set([...core, ...colHeute, ...colSpaeter]);
+
+  const toggleHeute = (id: string) =>
+    update({ offerings: toggle(data.offerings, id), futureBereiche: data.futureBereiche.filter((x) => x !== id) });
+  const toggleSpaeter = (id: string) =>
+    update({ futureBereiche: toggle(data.futureBereiche, id), offerings: data.offerings.filter((x) => x !== id) });
+  const toggleFromCatalog = (id: string) => {
+    if (heute.has(id) || spaeter.has(id)) {
+      update({ offerings: data.offerings.filter((x) => x !== id), futureBereiche: data.futureBereiche.filter((x) => x !== id) });
+    } else if (addTo === "heute") {
+      toggleHeute(id);
+    } else {
+      toggleSpaeter(id);
+    }
+  };
+  const note = (id: string) => (fromSources.has(id) ? "aus deinen Unterlagen" : undefined);
+
+  const name = data.markType !== "bild" && primaryMarkName(data) ? `„${primaryMarkName(data)}“` : "deiner Marke";
+  const hasSources = data.website.trim() !== "" || pitchFile !== null;
+
+  return (
+    <div>
+      <StepHeader
+        emoji="🧩"
+        title={`Was gehört noch zu ${name}?`}
+        subtitle="Rund um deinen Kern: Tipp an, was du heute schon anbietest – und was in den nächsten Jahren dazukommen soll."
+      />
+
+      {/* Rückblick auf den Kern */}
+      <section className="rounded-2xl border-2 border-violet bg-violet-soft p-4">
+        <h2 className="text-sm font-semibold">🎯 Dein Kern – fest dabei</h2>
+        <p className="mt-1 text-sm whitespace-pre-line text-muted">{data.coreProtection}</p>
+        {data.coreBereiche.length > 0 && (
+          <div className="mt-3 flex flex-wrap gap-2">
+            {data.coreBereiche.map((id) => {
+              const b = bereichById(id);
+              return b ? (
+                <span key={id} className="rounded-full border-2 border-violet bg-paper px-3 py-1 text-sm font-medium">
+                  🔒 {b.emoji} {b.label}
+                </span>
+              ) : null;
+            })}
+          </div>
+        )}
+      </section>
+
+      {loading && (
+        <div className="mt-8 flex items-center gap-4 rounded-2xl border-2 border-dashed border-line bg-paper p-5">
+          <span className="animate-float text-4xl">🤖</span>
+          <span>
+            <span className="block font-semibold">Ich überlege, was rund um deinen Kern dazugehört …</span>
+            <span className="text-sm text-muted">Gleich siehst du meine Vorschläge.</span>
+          </span>
+        </div>
+      )}
+
+      {error && !loading && (
+        <div className="mt-8">
+          <Callout tone="coral">
+            {error}{" "}
+            <button type="button" onClick={onSuggest} className="font-semibold underline">
+              Nochmal versuchen
+            </button>
+          </Callout>
+        </div>
+      )}
+
+      {!loading && (
+        <>
+          {suggestion && (
+            <div className="mt-8 flex flex-wrap items-center gap-2 text-sm">
+              {suggestion.summary && <span className="mr-1 text-muted">{suggestion.summary}</span>}
+              {suggestion.demo && (
+                <span className="rounded-full bg-coral px-3 py-1 text-xs font-semibold text-white">Demo-Modus</span>
+              )}
+              {suggestion.sourcesUsed.map((src) => (
+                <span key={src} className="rounded-full bg-mint-soft px-3 py-1 text-xs">
+                  ✓ {src} ausgewertet
+                </span>
+              ))}
+            </div>
+          )}
+
+          <div className="mt-4 grid gap-4 sm:grid-cols-2">
+            <section className="rounded-2xl border-2 border-line bg-paper p-4">
+              <h2 className="font-display text-lg font-bold">💼 Bietest du das heute schon an?</h2>
+              <p className="mb-3 text-sm text-muted">Tipp an, was stimmt.</p>
+              {colHeute.length > 0 ? (
+                <div className="flex flex-wrap gap-2">
+                  {colHeute.map((id) => (
+                    <BereichChip key={id} id={id} selected={heute.has(id)} onToggle={toggleHeute} note={note(id)} />
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-muted">Keine Vorschläge – unten findest du alle Bereiche.</p>
+              )}
+            </section>
+
+            <section className="rounded-2xl border-2 border-line bg-paper p-4">
+              <h2 className="font-display text-lg font-bold">🔮 Kommt das in den nächsten Jahren?</h2>
+              <p className="mb-3 text-sm text-muted">
+                Nur wählen, was du wirklich vorhast – die Marke muss spätestens 5 Jahre nach der Eintragung benutzt
+                werden.
+              </p>
+              {colSpaeter.length > 0 ? (
+                <div className="flex flex-wrap gap-2">
+                  {colSpaeter.map((id) => (
+                    <BereichChip key={id} id={id} selected={spaeter.has(id)} onToggle={toggleSpaeter} note={note(id)} />
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-muted">Keine Vorschläge – unten findest du alle Bereiche.</p>
+              )}
+            </section>
+          </div>
+        </>
+      )}
+
+      {/* Unterlagen – freiwillig, schärfen die Vorschläge */}
+      <PaketSources
+        data={data}
+        update={update}
+        pitchFile={pitchFile}
+        setPitchFile={setPitchFile}
+        canRefresh={sourcesChanged && !loading}
+        hasSources={hasSources}
+        onSuggest={onSuggest}
+      />
+
+      {/* Etwas fehlt? */}
+      <section className="mt-8">
+        <h2 className="font-display text-xl font-bold">Etwas fehlt?</h2>
+        <div className="mt-2 mb-3 flex flex-wrap items-center gap-2 text-sm">
+          <span className="text-muted">Hinzufügen zu:</span>
+          <Chip selected={addTo === "heute"} onClick={() => setAddTo("heute")}>
+            💼 Heute
+          </Chip>
+          <Chip selected={addTo === "spaeter"} onClick={() => setAddTo("spaeter")}>
+            🔮 Später
+          </Chip>
+        </div>
+        <AllBereiche
+          title="Alle Bereiche"
+          exclude={shown}
+          isSelected={(id) => heute.has(id) || spaeter.has(id)}
+          onToggle={toggleFromCatalog}
+        />
+
+        <div className="mt-6">
+          <Field
+            label="Sonst noch etwas? In eigenen Worten"
+            hint="Freiwillig – für alles, was du oben nicht findest. Die KI ordnet es der passenden Klasse zu."
+          >
+            <textarea
+              className={`${inputClass} min-h-24 resize-y`}
+              value={data.description}
+              onChange={(e) => update({ description: e.target.value })}
+              placeholder="z. B. Später wollen wir auch Leinen und Halsbänder verkaufen."
+              maxLength={2000}
+            />
+          </Field>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function PaketSources({
+  data,
+  update,
+  pitchFile,
+  setPitchFile,
+  canRefresh,
+  hasSources,
+  onSuggest,
+}: {
+  data: WizardData;
+  update: Update;
+  pitchFile: File | null;
+  setPitchFile: (f: File | null) => void;
+  canRefresh: boolean;
+  hasSources: boolean;
+  onSuggest: () => void;
 }) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState<string | null>(null);
@@ -615,15 +700,12 @@ export function StepMore({
   }
 
   return (
-    <div>
-      <StepHeader
-        emoji="🔍"
-        title="Zeig uns, was du hast"
-        subtitle="Je mehr wir wissen, desto besser passt dein Schutz. Beides ist freiwillig."
-      />
+    <section className="mt-8 rounded-2xl border-2 border-dashed border-line bg-paper p-4">
+      <h2 className="font-display text-lg font-bold">📎 Hast du eine Website oder ein Pitch-Deck?</h2>
+      <p className="mb-4 text-sm text-muted">Freiwillig – damit werden die Vorschläge oben genauer.</p>
 
-      <div className="space-y-6">
-        <Field label="🌐 Deine Website" hint="Wir lesen sie kurz durch, um dein Angebot zu verstehen.">
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Field label="🌐 Website">
           <input
             className={inputClass}
             value={data.website}
@@ -635,10 +717,10 @@ export function StepMore({
         </Field>
 
         <div>
-          <span className="mb-1.5 block text-sm font-semibold">📎 Pitch-Deck, Businessplan oder Flyer</span>
+          <span className="mb-1.5 block text-sm font-semibold">📄 Pitch-Deck, Businessplan oder Flyer</span>
           {pitchFile ? (
-            <div className="flex items-center justify-between rounded-2xl border-2 border-mint bg-mint-soft p-4">
-              <span className="truncate font-medium">📄 {pitchFile.name}</span>
+            <div className="flex items-center justify-between rounded-xl border-2 border-mint bg-mint-soft px-4 py-3">
+              <span className="truncate text-sm font-medium">{pitchFile.name}</span>
               <button
                 type="button"
                 onClick={() => setPitchFile(null)}
@@ -651,7 +733,7 @@ export function StepMore({
             <button
               type="button"
               onClick={() => fileRef.current?.click()}
-              className="flex w-full items-center justify-center rounded-2xl border-2 border-dashed border-line bg-paper p-8 text-muted transition hover:border-violet"
+              className="w-full rounded-xl border-2 border-dashed border-line px-4 py-3 text-sm text-muted transition hover:border-violet"
             >
               📤 PDF hochladen (max. 10 MB)
             </button>
@@ -665,58 +747,27 @@ export function StepMore({
           />
           {error && <p className="mt-2 text-sm text-coral">{error}</p>}
         </div>
-
-        <Callout tone="violet">
-          🔒 Deine Unterlagen nutzen wir nur, um dir passende Bereiche vorzuschlagen und dein Verzeichnis zu erstellen. Noch nichts davon fertig? Kein
-          Problem – einfach weiter.
-        </Callout>
       </div>
-    </div>
+
+      {canRefresh && (
+        <button
+          type="button"
+          onClick={onSuggest}
+          className="mt-4 rounded-full border-2 border-violet bg-violet-soft px-5 py-2.5 font-semibold transition hover:-translate-y-0.5"
+        >
+          {hasSources ? "✨ Auswerten" : "🔄 Vorschläge aktualisieren"}
+        </button>
+      )}
+
+      <p className="mt-4 text-xs text-muted">
+        🔒 Deine Unterlagen nutzen wir nur, um dir passende Bereiche vorzuschlagen und dein Verzeichnis zu erstellen.
+      </p>
+    </section>
   );
 }
 
 /* ------------------------------------------------------------------ */
-/* 5 · Zukunft                                                          */
-/* ------------------------------------------------------------------ */
-
-export function StepFuture({ data, update }: { data: WizardData; update: Update }) {
-  return (
-    <div>
-      <StepHeader
-        emoji="🔮"
-        title="Träum mal ein bisschen"
-        subtitle="Wo steht deine Marke in drei Jahren? Damit dein Schutz mitwachsen kann."
-      />
-
-      <div className="flex flex-wrap gap-2.5">
-        {FUTURE_PLANS.map((o) => (
-          <Chip
-            key={o.id}
-            selected={data.futurePlans.includes(o.id)}
-            onClick={() => update({ futurePlans: toggle(data.futurePlans, o.id) })}
-          >
-            {o.emoji} {o.label}
-          </Chip>
-        ))}
-      </div>
-
-      <div className="mt-8">
-        <Field label="Noch was im Kopf?" hint="Optional – jede verrückte Idee zählt.">
-          <textarea
-            className={`${inputClass} min-h-24 resize-y`}
-            value={data.futureNote}
-            onChange={(e) => update({ futureNote: e.target.value })}
-            placeholder="z. B. Irgendwann eine eigene Hundefutter-Linie 🐶"
-            maxLength={1000}
-          />
-        </Field>
-      </div>
-    </div>
-  );
-}
-
-/* ------------------------------------------------------------------ */
-/* 6 · Anmelder                                                         */
+/* 5 · Anmelder (kommt nach „Schutz“)                                   */
 /* ------------------------------------------------------------------ */
 
 export function StepWho({ data, update }: { data: WizardData; update: Update }) {

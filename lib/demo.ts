@@ -163,9 +163,6 @@ const BY_ID: Record<string, Template[]> = {
       terms: ["Juristische Dienstleistungen"],
     },
   ],
-  products: [],
-  international: [],
-  merch: [],
 };
 
 /** Bereiche aus dem Katalog, für die es eine Demo-Vorlage gibt */
@@ -205,16 +202,6 @@ function templatesFromCatalog(bereichId: string): Template[] {
   }));
 }
 
-/** Zukunftspläne, die auf eine Angebots-ID verweisen */
-const FUTURE_TO_OFFERING: Record<string, string> = {
-  merch: "fashion",
-  app: "app",
-  shop: "shop",
-  courses: "courses",
-  events: "events",
-  media: "media",
-};
-
 export function buildDemoSpec(data: WizardData, sourcesUsed: string[]): SpecResult {
   const classes = new Map<number, SpecClass>();
 
@@ -241,10 +228,7 @@ export function buildDemoSpec(data: WizardData, sourcesUsed: string[]): SpecResu
   (data.coreBereiche ?? []).forEach((id) => addBereich(id, "muss"));
   matchBereiche(data.coreProtection ?? "").forEach((id) => addBereich(id, "muss"));
   data.offerings.forEach((id) => addBereich(id, "kern"));
-  data.futurePlans.forEach((id) => {
-    const offering = FUTURE_TO_OFFERING[id];
-    if (offering) add(offering, "spaeter");
-  });
+  (data.futureBereiche ?? []).forEach((id) => addBereich(id, "spaeter"));
 
   if (classes.size === 0) {
     add("consulting", "kern");

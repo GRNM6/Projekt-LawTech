@@ -11,7 +11,7 @@ const MAX_WEBSITE_CHARS = 12_000;
 /** Liest Angaben und optionales Pitch-PDF aus dem Formular – oder liefert eine Fehlerantwort */
 export async function readWizardForm(
   request: Request,
-): Promise<{ data: WizardData; pitchFile: File | null } | { error: Response }> {
+): Promise<{ data: WizardData; pitchFile: File | null; form: FormData } | { error: Response }> {
   let form: FormData;
   try {
     form = await request.formData();
@@ -39,7 +39,7 @@ export async function readWizardForm(
     };
   }
 
-  return { data, pitchFile };
+  return { data, pitchFile, form };
 }
 
 /** Pitch-PDF als Dokument-Baustein für die Claude-API */

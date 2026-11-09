@@ -1,7 +1,6 @@
 import { bereichLabel } from "@/lib/bereiche";
 import { buildDemoSpec } from "@/lib/demo";
 import { checkSpecWithEuipo } from "@/lib/euipo";
-import { countryName, optionLabel, FUTURE_PLANS } from "@/lib/options";
 import { callClaudeTool, fetchWebsiteText, pdfContentBlock, readWizardForm } from "@/lib/quellen";
 import { filledMarkNames, type SpecClass, type SpecResult, type WizardData } from "@/lib/types";
 
@@ -70,8 +69,8 @@ Regeln für das Verzeichnis:
 - Keine bloßen Klassenüberschriften, sondern konkrete Begriffe.
 - Ordne jede Klasse genau einer Stufe ("tier") zu:
   - "muss": Die Angabe "Muss auf jeden Fall geschützt sein" und die dazu gewählten Muss-Bereiche sind die wichtigste Information. Alle Klassen, die sie abdecken, sind "muss" und müssen vollständig abgedeckt sein.
-  - "kern": Was die Person heute anbietet oder konkret plant (Auswahl, Beschreibung, Website, Pitch-Dokument) und nicht schon "muss" ist.
-  - "spaeter": Realistische, naheliegende Erweiterungen aus den Zukunftsplänen. Keine fernliegenden Klassen und keine Vorratsanmeldung – die Marke muss innerhalb von 5 Jahren nach Eintragung benutzt werden.
+  - "kern": Was die Person heute anbietet (gewählte Bereiche "heute", eigene Worte, Website, Pitch-Dokument) und nicht schon "muss" ist.
+  - "spaeter": Die Bereiche, die die Person für die nächsten Jahre gewählt hat. Keine darüber hinausgehenden Klassen und keine Vorratsanmeldung – die Marke muss innerhalb von 5 Jahren nach Eintragung benutzt werden.
 - Bei Software in der Regel Klasse 9 (herunterladbar) und Klasse 42 (SaaS, Plattformen) prüfen.
 - Pro Klasse 2 bis 8 Begriffe. Insgesamt für die meisten Gründungen 1 bis 5 Klassen.
 - Jede Klasse nur einmal.
@@ -125,11 +124,9 @@ function buildUserPrompt(data: WizardData, websiteText: string | null, hasPdf: b
     `Markenform: ${markTypeLabel}`,
     `Muss auf jeden Fall geschützt sein (wichtigste Angabe): ${data.coreProtection || "-"}`,
     `Muss-Bereiche (vom Nutzer dazu gewählt): ${(data.coreBereiche ?? []).map(bereichLabel).join(", ") || "-"}`,
-    `Anmelder sitzt in: ${countryName(data.country)}`,
-    `Angebot (Auswahl): ${data.offerings.map(bereichLabel).join(", ") || "-"}`,
-    `Beschreibung in eigenen Worten: ${data.description || "-"}`,
-    `Zukunftspläne: ${data.futurePlans.map((id) => optionLabel(FUTURE_PLANS, id)).join(", ") || "-"}`,
-    `Weitere Pläne in eigenen Worten: ${data.futureNote || "-"}`,
+    `Bietet heute an (Bereiche): ${data.offerings.map(bereichLabel).join(", ") || "-"}`,
+    `Kommt in den nächsten Jahren dazu (Bereiche): ${(data.futureBereiche ?? []).map(bereichLabel).join(", ") || "-"}`,
+    `Sonst noch, in eigenen Worten: ${data.description || "-"}`,
     `Website: ${data.website || "-"}`,
   ];
 

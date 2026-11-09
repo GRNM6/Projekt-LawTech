@@ -41,13 +41,13 @@ Nicht harmonisierte Begriffe werden automatisch durch passende Vorschläge der E
 | `app/page.tsx` | Startseite |
 | `app/anmelden/page.tsx` | Anmelde-Assistent |
 | `components/wizard/` | Die einzelnen Schritte des Assistenten |
-| `app/api/vorschlaege/route.ts` | KI-Vorschläge für passende Bereiche (Chips) im Schritt „Angebot“ |
+| `app/api/vorschlaege/route.ts` | KI-Vorschläge für passende Bereiche (Chips) in „Kern“ und „Dein Schutzpaket“ |
 | `app/api/verzeichnis/route.ts` | KI-Erstellung des Waren- und Dienstleistungsverzeichnisses |
 | `lib/quellen.ts` | Gemeinsame Bausteine der KI-Routen (Website auslesen, PDF, Claude-Aufruf) |
 | `lib/bereiche.ts` | Katalog der auswählbaren Bereiche – deckt alle 45 Klassen ab |
 | `lib/euipo.ts` | Anbindung an die EUIPO-API |
 | `lib/fees.ts` | EUIPO-Amtsgebühren |
-| `lib/options.ts` | Zukunftspläne, Länderliste |
+| `lib/options.ts` | Länderliste |
 | `lib/demo.ts` | Beispieldaten für den Demo-Modus |
 
 ## Noch offen
