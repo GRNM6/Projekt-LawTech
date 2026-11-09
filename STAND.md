@@ -67,8 +67,9 @@ vorerst weggelassen.
 - Demo-Stichwortsuche genauer (09.11.): Treffer nur am Wortanfang/-ende, Präfixe „=“ (ganzes Wort) und
   „^“ (nur Wortanfang) gegen Fehltreffer wie „kleine“→Leine, „wollen“→Wolle, „Hundert“→Hund
 
-### Als Nächstes
-- [ ] Neuen Ablauf lokal testen (`npm run build`, durchklicken) und Feedback von Geronimo
+### Als Nächstes (hier am 09.11. aufgehört)
+- [ ] Neuen Ablauf lokal testen (`npm run build`, durchklicken) – inkl. Freitext-Vorschläge
+- [ ] Offen: Fehler „✓ Pitch-Dokument ausgewertet“ im Demo-Modus beheben (Geronimo fragen)
 - [ ] Danach: Schritte „Schutz“ und „Anmelder“ nach Geronimos Vorgaben
 
 ### Noch nicht lokal getestet (Stand 09.11.)
