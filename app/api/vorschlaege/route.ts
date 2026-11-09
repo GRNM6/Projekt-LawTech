@@ -8,6 +8,8 @@ import type { SuggestMode, SuggestResult, WizardData } from "@/lib/types";
  * Modus „kern“  (Schritt „Kern“): Bereiche, die den Kerntext abdecken.
  * Modus „paket“ (Schritt „Dein Schutzpaket“): Bereiche rund um den Kern – was vermutlich heute schon
  *   dazugehört und was in den nächsten Jahren dazukommen könnte; Website und Pitch-PDF schärfen das.
+ * Modus „text“ (Schritt „Dein Schutzpaket“): nur neue Bereiche aus dem Freitext „Sonst noch etwas?“;
+ *   alles, was schon angezeigt wird, schickt der Client als `exclude` mit.
  *
  * Ohne ANTHROPIC_API_KEY: einfache Schlagwortsuche plus feste Nachbarbereiche (Demo-Modus).
  */
@@ -19,7 +21,9 @@ export async function POST(request: Request) {
   const input = await readWizardForm(request);
   if ("error" in input) return input.error;
   const { data, pitchFile, form } = input;
-  const mode: SuggestMode = form.get("mode") === "paket" ? "paket" : "kern";
+  const rawMode = form.get("mode");
+  const mode: SuggestMode = rawMode === "paket" || rawMode === "text" ? rawMode : "kern";
+  const exclude = parseExclude(form.get("exclude"));
 
   const sourcesUsed: string[] = [];
   const websiteText = mode === "paket" && data.website?.trim() ? await fetchWebsiteText(data.website) : null;
@@ -30,23 +34,26 @@ export async function POST(request: Request) {
   if (!apiKey) {
     // Kleine Pause, damit sich der Demo-Modus wie der echte Ablauf anfühlt
     await new Promise((r) => setTimeout(r, 1200));
-    return Response.json(demoSuggestions(mode, data, websiteText, sourcesUsed));
+    return Response.json(demoSuggestions(mode, data, websiteText, sourcesUsed, exclude));
   }
 
   try {
     const content: unknown[] = [];
     if (mode === "paket" && pitchFile) content.push(await pdfContentBlock(pitchFile));
-    content.push({ type: "text", text: buildUserPrompt(mode, data, websiteText, mode === "paket" && Boolean(pitchFile)) });
+    content.push({
+      type: "text",
+      text: buildUserPrompt(mode, data, websiteText, mode === "paket" && Boolean(pitchFile), exclude),
+    });
 
     const result = await callClaudeTool({
       apiKey,
-      system: mode === "kern" ? SYSTEM_KERN : SYSTEM_PAKET,
+      system: mode === "kern" ? SYSTEM_KERN : mode === "paket" ? SYSTEM_PAKET : SYSTEM_TEXT,
       tool: TOOL,
       content,
       maxTokens: 1200,
       timeoutMs: 60_000,
     });
-    return Response.json({ ...sanitize(result, mode, data), sourcesUsed, demo: false } satisfies SuggestResult);
+    return Response.json({ ...sanitize(result, mode, data, exclude), sourcesUsed, demo: false } satisfies SuggestResult);
   } catch (error) {
     console.error("[vorschlaege] KI-Fehler:", error);
     return Response.json(
@@ -83,7 +90,25 @@ Aufgabe: Der Kern steht fest. Schlage vor, was rund um diesen Kern noch zum Schu
 - "aus_unterlagen": die IDs aus "heute" und "spaeter", die sich klar aus Website oder Pitch-Dokument ergeben.
 - Schlage nichts vor, was schon fest gewählt ist. Jeder Bereich höchstens in einer Liste.`;
 
+const SYSTEM_TEXT = `${COMMON}
+
+Aufgabe: Die Person hat ihr Schutzpaket schon weitgehend zusammengestellt und ergänzt in eigenen Worten, was noch fehlt. Wähle nur Bereiche, die dieser Text tatsächlich beschreibt.
+- "heute": was die Person laut Text heute anbietet oder konkret plant.
+- "spaeter": was laut Text erst in den nächsten Jahren kommen soll (z. B. "später", "irgendwann", "geplant").
+- Schlage nichts vor, was in der Liste "Bereits angezeigt" steht. Gibt es nichts Neues, lass beide Listen leer.
+- "aus_unterlagen" bleibt leer. Insgesamt höchstens ${MAX_SUGGESTIONS} Bereiche.`;
+
 const ids = BEREICHE.map((b) => b.id);
+
+function parseExclude(raw: FormDataEntryValue | null): Set<string> {
+  if (typeof raw !== "string") return new Set();
+  try {
+    const list: unknown = JSON.parse(raw);
+    return new Set(Array.isArray(list) ? list.filter((x): x is string => typeof x === "string") : []);
+  } catch {
+    return new Set();
+  }
+}
 
 const TOOL = {
   name: "bereiche_vorschlagen",
@@ -100,8 +125,23 @@ const TOOL = {
   },
 } as const;
 
-function buildUserPrompt(mode: SuggestMode, data: WizardData, websiteText: string | null, hasPdf: boolean): string {
+function buildUserPrompt(
+  mode: SuggestMode,
+  data: WizardData,
+  websiteText: string | null,
+  hasPdf: boolean,
+  exclude: Set<string>,
+): string {
   const lines = [`Kern des Angebots (wichtigste Angabe): ${data.coreProtection || "-"}`];
+  if (mode === "text") {
+    lines.push(
+      `Bereits angezeigt (nicht erneut vorschlagen): ${[...exclude].join(", ") || "-"}`,
+      "",
+      "<eigene_worte>",
+      data.description || "-",
+      "</eigene_worte>",
+    );
+  }
   if (mode === "paket") {
     lines.push(
       `Fest gewählte Kern-Bereiche (nicht erneut vorschlagen): ${(data.coreBereiche ?? []).join(", ") || "-"}`,
@@ -118,17 +158,18 @@ function sanitize(
   input: unknown,
   mode: SuggestMode,
   data: WizardData,
+  alreadyShown: Set<string>,
 ): Pick<SuggestResult, "suggested" | "later" | "fromSources" | "summary"> {
   const obj = (input ?? {}) as Record<string, unknown>;
   const known = new Set(ids);
-  const exclude = new Set(mode === "paket" ? (data.coreBereiche ?? []) : []);
+  const exclude = new Set(mode === "kern" ? [] : [...(data.coreBereiche ?? []), ...alreadyShown]);
   const list = (v: unknown) =>
     Array.from(
       new Set((Array.isArray(v) ? v : []).filter((id): id is string => typeof id === "string" && known.has(id))),
     ).filter((id) => !exclude.has(id));
 
   const suggested = list(obj.heute).slice(0, MAX_SUGGESTIONS);
-  const later = mode === "paket" ? list(obj.spaeter).filter((id) => !suggested.includes(id)).slice(0, MAX_LATER) : [];
+  const later = mode !== "kern" ? list(obj.spaeter).filter((id) => !suggested.includes(id)).slice(0, MAX_LATER) : [];
   const fromSources = mode === "paket" ? list(obj.aus_unterlagen).filter((id) => suggested.includes(id) || later.includes(id)) : [];
   return { suggested, later, fromSources, summary: String(obj.summary ?? "") };
 }
@@ -161,13 +202,34 @@ const DEMO_NACHBARN: Record<string, string[]> = {
 /** Naheliegende Erweiterungen für „später“ im Demo-Modus */
 const DEMO_SPAETER = ["kleidung", "app", "bildung", "events", "shop"];
 
+/** Wörter, an denen der Demo-Modus erkennt, dass etwas erst später kommt */
+const LATER_WORDS = /\b(später|irgendwann|zukunft|zukünftig|geplant|planen|plane|demnächst|bald)\b/i;
+
 function demoSuggestions(
   mode: SuggestMode,
   data: WizardData,
   websiteText: string | null,
   sourcesUsed: string[],
+  exclude: Set<string>,
 ): SuggestResult {
   const kern = matchBereiche(data.coreProtection ?? "");
+
+  if (mode === "text") {
+    const skip = new Set([...(data.coreBereiche ?? []), ...exclude]);
+    const found = matchBereiche(data.description ?? "")
+      .filter((id) => !skip.has(id))
+      .slice(0, MAX_SUGGESTIONS);
+    // Grobe Faustregel: Klingt der Text nach Zukunft, landet alles unter „später“
+    const isLater = LATER_WORDS.test(data.description ?? "");
+    return {
+      suggested: isLater ? [] : found,
+      later: isLater ? found : [],
+      fromSources: [],
+      summary: "Demo-Modus: Vorschläge per Stichwortsuche in deinem Text.",
+      sourcesUsed: [],
+      demo: true,
+    };
+  }
 
   if (mode === "kern") {
     const suggested = kern.slice(0, MAX_SUGGESTIONS);

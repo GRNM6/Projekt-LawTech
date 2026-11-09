@@ -40,6 +40,12 @@ export function Wizard() {
   const [suggestLoading, setSuggestLoading] = useState(false);
   const [suggestError, setSuggestError] = useState<string | null>(null);
 
+  // Neue Vorschläge aus dem Freitext „Sonst noch etwas?“ im Schutzpaket
+  const [textSuggestion, setTextSuggestion] = useState<SuggestResult | null>(null);
+  const [textSuggestedFor, setTextSuggestedFor] = useState<string | null>(null);
+  const [textLoading, setTextLoading] = useState(false);
+  const [textError, setTextError] = useState<string | null>(null);
+
   const step = STEPS[stepIndex];
   const update = (patch: Partial<WizardData>) => setData((d) => ({ ...d, ...patch }));
   const goTo = (id: StepId) => {
@@ -119,6 +125,39 @@ export function Wizard() {
     }
   }
 
+  async function loadTextSuggestions() {
+    const text = data.description.trim();
+    // Alles, was im Schutzpaket schon zu sehen ist – nur wirklich Neues soll vorgeschlagen werden
+    const alreadyShown = Array.from(
+      new Set([
+        ...data.coreBereiche,
+        ...data.offerings,
+        ...data.futureBereiche,
+        ...(suggestion?.suggested ?? []),
+        ...(suggestion?.later ?? []),
+      ]),
+    );
+    setTextLoading(true);
+    setTextError(null);
+    try {
+      const body = new FormData();
+      body.append("data", JSON.stringify({ ...data, logoDataUrl: null, description: text }));
+      body.append("mode", "text");
+      body.append("exclude", JSON.stringify(alreadyShown));
+
+      const res = await fetch("/api/vorschlaege", { method: "POST", body });
+      const json = (await res.json()) as SuggestResult & { error?: string };
+      if (!res.ok) throw new Error(json.error ?? "Die Vorschläge konnten nicht erstellt werden.");
+
+      setTextSuggestion(json);
+      setTextSuggestedFor(text);
+    } catch (e) {
+      setTextError(e instanceof Error ? e.message : "Unbekannter Fehler.");
+    } finally {
+      setTextLoading(false);
+    }
+  }
+
   function next() {
     if (!canContinue(step.id, data, selected.length > 0)) return;
     // Beim Wechsel ins Schutzpaket gleich Vorschläge rund um den Kern holen
@@ -144,7 +183,7 @@ export function Wizard() {
   const showNav = step.id !== "summary" && !(step.id === "spec" && (loading || error || !spec));
   const nextEnabled =
     canContinue(step.id, data, selected.length > 0) &&
-    !(step.id === "paket" && suggestLoading) &&
+    !(step.id === "paket" && (suggestLoading || textLoading)) &&
     !(step.id === "kern" && kernLoading);
 
   return (
@@ -204,6 +243,11 @@ export function Wizard() {
               loading={suggestLoading}
               error={suggestError}
               onSuggest={() => void loadPaketSuggestions()}
+              textSuggestion={textSuggestion}
+              textStale={textSuggestedFor !== null && textSuggestedFor !== data.description.trim()}
+              textLoading={textLoading}
+              textError={textError}
+              onSuggestText={() => void loadTextSuggestions()}
             />
           )}
           {step.id === "who" && <StepWho data={data} update={update} />}

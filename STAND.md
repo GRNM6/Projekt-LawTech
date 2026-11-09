@@ -59,9 +59,13 @@ vorerst weggelassen.
   Demo-Modus nicht gelesen (Stichwortsuche nur in Kerntext und Website).
 - Bekannter Fehler: Im Demo-Modus steht trotzdem „✓ Pitch-Dokument ausgewertet“ (Schutzpaket und
   Schutz) – irreführend, sollte behoben werden.
-- Freitext „Sonst noch etwas?“ im Schutzpaket wirkt bisher nur unsichtbar im Verzeichnis (mit
-  API-Schlüssel), nicht auf die Vorschläge; im Demo-Modus gar nicht. Vorschlag: per „✨ Auswerten“
-  in die Vorschläge einfließen lassen (markiert „· aus deinem Text“). Noch nicht entschieden.
+- [x] Freitext „Sonst noch etwas?“ (09.11. umgesetzt): Knopf „✨ Vorschläge zu deinem Text“ → darunter
+  erscheinen **nur neue** Bereiche („✨ Neu aus deinem Text“, getrennt nach 💼 Heute / 🔮 In den
+  nächsten Jahren), sonst „✓ Keine neuen Vorschläge“. Route `vorschlaege` Modus `text` mit
+  `exclude`-Liste. Im Verzeichnis dient der Text nur noch als Zusatzinfo für Begriffe – keine Klassen
+  mehr „durch die Hintertür“.
+- Demo-Stichwortsuche genauer (09.11.): Treffer nur am Wortanfang/-ende, Präfixe „=“ (ganzes Wort) und
+  „^“ (nur Wortanfang) gegen Fehltreffer wie „kleine“→Leine, „wollen“→Wolle, „Hundert“→Hund
 
 ### Als Nächstes
 - [ ] Neuen Ablauf lokal testen (`npm run build`, durchklicken) und Feedback von Geronimo

@@ -473,6 +473,11 @@ export function StepPaket({
   loading,
   error,
   onSuggest,
+  textSuggestion,
+  textStale,
+  textLoading,
+  textError,
+  onSuggestText,
 }: {
   data: WizardData;
   update: Update;
@@ -484,6 +489,12 @@ export function StepPaket({
   loading: boolean;
   error: string | null;
   onSuggest: () => void;
+  /** Neue Vorschläge aus dem Freitext „Sonst noch etwas?“ */
+  textSuggestion: SuggestResult | null;
+  textStale: boolean;
+  textLoading: boolean;
+  textError: string | null;
+  onSuggestText: () => void;
 }) {
   const [addTo, setAddTo] = useState<"heute" | "spaeter">("heute");
 
@@ -493,12 +504,19 @@ export function StepPaket({
   const fromSources = new Set(suggestion?.fromSources ?? []);
   const sugHeute = (suggestion?.suggested ?? []).filter((id) => !core.has(id));
   const sugSpaeter = (suggestion?.later ?? []).filter((id) => !core.has(id) && !sugHeute.includes(id));
+  // Vorschläge aus dem Freitext: nur, was oben nicht ohnehin schon vorgeschlagen ist
+  const notAbove = (id: string) => !core.has(id) && !sugHeute.includes(id) && !sugSpaeter.includes(id);
+  const textHeute = (textSuggestion?.suggested ?? []).filter(notAbove);
+  const textSpaeter = (textSuggestion?.later ?? []).filter((id) => notAbove(id) && !textHeute.includes(id));
+  const textIds = new Set([...textHeute, ...textSpaeter]);
 
   // Ein Chip steht in der Spalte, in die der Nutzer ihn gewählt hat – sonst dort, wo er vorgeschlagen wurde
-  const unique = (ids: string[]) => Array.from(new Set(ids)).filter((id) => !core.has(id));
+  // Chips aus dem Freitext bleiben unten beim Text, damit nichts doppelt erscheint
+  const unique = (ids: string[]) => Array.from(new Set(ids)).filter((id) => !core.has(id) && !textIds.has(id));
   const colHeute = unique([...sugHeute.filter((id) => !spaeter.has(id)), ...sugSpaeter.filter((id) => heute.has(id)), ...data.offerings]);
   const colSpaeter = unique([...sugSpaeter.filter((id) => !heute.has(id)), ...sugHeute.filter((id) => spaeter.has(id)), ...data.futureBereiche]);
-  const shown = new Set([...core, ...colHeute, ...colSpaeter]);
+  const shown = new Set([...core, ...colHeute, ...colSpaeter, ...textIds]);
+  const canSuggestText = data.description.trim().length >= 5 && !textLoading && (!textSuggestion || textStale);
 
   const toggleHeute = (id: string) =>
     update({ offerings: toggle(data.offerings, id), futureBereiche: data.futureBereiche.filter((x) => x !== id) });
@@ -659,6 +677,77 @@ export function StepPaket({
               maxLength={2000}
             />
           </Field>
+
+          {(!textSuggestion || textStale) && (
+            <button
+              type="button"
+              onClick={onSuggestText}
+              disabled={!canSuggestText}
+              className="mt-3 rounded-full border-2 border-violet bg-violet-soft px-5 py-2.5 font-semibold transition enabled:hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              {textStale ? "🔄 Vorschläge aktualisieren" : "✨ Vorschläge zu deinem Text"}
+            </button>
+          )}
+
+          {textLoading && (
+            <div className="mt-4 flex items-center gap-3 rounded-2xl border-2 border-dashed border-line bg-paper p-4">
+              <span className="animate-float text-3xl">🤖</span>
+              <span className="font-semibold">Ich lese deinen Text …</span>
+            </div>
+          )}
+
+          {textError && !textLoading && (
+            <div className="mt-4">
+              <Callout tone="coral">
+                {textError}{" "}
+                <button type="button" onClick={onSuggestText} className="font-semibold underline">
+                  Nochmal versuchen
+                </button>
+              </Callout>
+            </div>
+          )}
+
+          {textSuggestion && !textLoading && (
+            <div className="mt-4 rounded-2xl border-2 border-line bg-paper p-4">
+              {textIds.size === 0 ? (
+                <p className="text-sm text-muted">
+                  ✓ Keine neuen Vorschläge – was du beschreibst, ist oben schon abgedeckt.
+                </p>
+              ) : (
+                <>
+                  <h3 className="font-semibold">✨ Neu aus deinem Text</h3>
+                  <p className="mb-3 text-sm text-muted">
+                    Tipp an, was dazugehören soll.
+                    {textSuggestion.demo && (
+                      <span className="ml-2 rounded-full bg-coral px-2 py-0.5 text-xs font-semibold text-white">
+                        Demo-Modus
+                      </span>
+                    )}
+                  </p>
+                  {textHeute.length > 0 && (
+                    <div className="mb-3">
+                      <p className="mb-1.5 text-xs font-semibold text-muted">💼 Heute</p>
+                      <div className="flex flex-wrap gap-2">
+                        {textHeute.map((id) => (
+                          <BereichChip key={id} id={id} selected={heute.has(id)} onToggle={toggleHeute} />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {textSpaeter.length > 0 && (
+                    <div>
+                      <p className="mb-1.5 text-xs font-semibold text-muted">🔮 In den nächsten Jahren</p>
+                      <div className="flex flex-wrap gap-2">
+                        {textSpaeter.map((id) => (
+                          <BereichChip key={id} id={id} selected={spaeter.has(id)} onToggle={toggleSpaeter} />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          )}
         </div>
       </section>
     </div>

@@ -53,8 +53,9 @@ export function primaryMarkName(data: Pick<WizardData, "markNames">): string {
  * Wofür Vorschläge gebraucht werden:
  * kern  = Bereiche, die den Kerntext abdecken (Schritt „Kern“)
  * paket = Bereiche rund um den Kern, heute und später (Schritt „Dein Schutzpaket“)
+ * text  = nur neue Bereiche aus dem Freitext „Sonst noch etwas?“ (Schritt „Dein Schutzpaket“)
  */
-export type SuggestMode = "kern" | "paket";
+export type SuggestMode = "kern" | "paket" | "text";
 
 /** Antwort der Vorschlags-Route: passende Bereiche aus dem Katalog (`lib/bereiche.ts`) */
 export interface SuggestResult {
